@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import OnboardingForm from './form';
 
+export const metadata = { title: 'Créer mon entreprise', robots: { index: false, follow: false } };
+
 export default async function OnboardingPage({
   searchParams,
 }: {
@@ -24,14 +26,14 @@ export default async function OnboardingPage({
   const { error } = await searchParams;
 
   return (
-    <main className="mx-auto max-w-md px-5 py-8">
+    <main id="contenu" className="mx-auto max-w-md px-5 py-8">
       <h1 className="text-2xl font-bold">Bienvenue 👋</h1>
       <p className="mt-1 mb-6 text-slate-600">
         2 minutes pour renseigner votre entreprise. Vos devis seront conformes
         et prêts à envoyer.
       </p>
       {error && (
-        <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
+        <p role="alert" className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
           {error}
         </p>
       )}

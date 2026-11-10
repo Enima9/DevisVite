@@ -151,14 +151,31 @@ export default function OnboardingForm(props: Props) {
             name="primary_color"
             type="color"
             defaultValue={init?.primary_color ?? '#1d4ed8'}
-            className="h-14 w-full rounded-xl border-2 border-slate-300"
+            className="h-14 w-full rounded-xl border-2 border-slate-500"
           />
         </div>
         <div>
-          <label htmlFor="iban" className="label">IBAN (optionnel, pour vos factures)</label>
+          <label htmlFor="iban" className="label">IBAN (facultatif — affiché sur vos devis pour les virements)</label>
           <input id="iban" name="iban" className="input" placeholder="FR76…" defaultValue={init?.iban ?? ''} />
         </div>
       </section>
+
+      {!edit && (
+        <label className="flex items-start gap-3 text-sm">
+          <input type="checkbox" name="terms" required className="mt-1 h-5 w-5" />
+          <span>
+            J&apos;ai lu et j&apos;accepte les{' '}
+            <a href="/cgu" target="_blank" rel="noopener noreferrer" className="font-medium text-brand underline">
+              conditions d&apos;utilisation
+            </a>{' '}
+            et la{' '}
+            <a href="/confidentialite" target="_blank" rel="noopener noreferrer" className="font-medium text-brand underline">
+              politique de confidentialité
+            </a>{' '}
+            (nouvel onglet). *
+          </span>
+        </label>
+      )}
 
       <button type="submit" className="btn-primary">
         {edit ? 'Enregistrer les réglages' : 'Créer mon entreprise →'}

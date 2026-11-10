@@ -37,7 +37,10 @@ export async function middleware(request: NextRequest) {
 
     const { pathname } = request.nextUrl;
     const isPublicRoute =
-      pathname === '/login' || pathname.startsWith('/auth') || pathname.startsWith('/q');
+      pathname === '/login' ||
+      pathname.startsWith('/auth') ||
+      pathname.startsWith('/q') ||
+      PUBLIC_PAGES.includes(pathname);
 
     if (!user && !isPublicRoute) {
       const url = request.nextUrl.clone();
@@ -59,8 +62,11 @@ export async function middleware(request: NextRequest) {
   return supabaseResponse;
 }
 
+/** Pages publiques (consultables sans compte) : informations légales. */
+const PUBLIC_PAGES = ['/mentions-legales', '/confidentialite', '/cgu', '/cookies'];
+
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icons|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|robots.txt|sitemap.xml|llms.txt|icons|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

@@ -1,0 +1,19 @@
+# DevisVite
+
+> DevisVite est un service web en français qui aide les artisans et entreprises du bâtiment à créer leurs devis en quelques minutes : on dicte ou on décrit le chantier, une IA propose un brouillon, l'artisan vérifie puis exporte le devis en PDF.
+
+Le service est gratuit à ce jour, destiné aux professionnels. L'espace de travail (tableau de bord, devis, catalogue, réglages) est privé et nécessite un compte (connexion par lien magique envoyé par email, sans mot de passe). Il n'y a pas de contenu à indexer dans l'espace connecté.
+
+## Pages publiques
+
+- [Accueil / connexion](https://devisvite-phase3.vercel.app/login): présentation et accès au service
+- [Mentions légales](https://devisvite-phase3.vercel.app/mentions-legales): éditeur, directeur de la publication, hébergeur
+- [Politique de confidentialité](https://devisvite-phase3.vercel.app/confidentialite): données traitées, finalités, durées, sous-traitants, droits RGPD
+- [Conditions générales d'utilisation](https://devisvite-phase3.vercel.app/cgu): règles d'usage, IA, données, tarifs et remboursement
+- [Politique de cookies](https://devisvite-phase3.vercel.app/cookies): uniquement des cookies d'authentification strictement nécessaires, pas de traceurs
+
+## Informations utiles
+
+- Langue : français (France). Droit applicable : droit français, RGPD.
+- Aucun traceur publicitaire ni outil de mesure d'audience.
+- Plan du site : https://devisvite-phase3.vercel.app/sitemap.xml

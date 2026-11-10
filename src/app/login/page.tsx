@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
@@ -8,9 +9,13 @@ export default function LoginPage() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   // Supabase renvoie les erreurs de lien dans l'adresse (#error_code=otp_expired…)
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('compte-supprime')) {
+      setNotice('Votre compte et toutes vos données ont été supprimés.');
+    }
     const hash = window.location.hash;
     if (hash.includes('error')) {
       setError(
@@ -44,8 +49,16 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center px-5">
+    <main id="contenu" className="flex min-h-[calc(100dvh-9rem)] flex-col items-center justify-center px-5 py-8">
       <div className="w-full max-w-sm">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/icon.svg"
+          alt="Logo DevisVite : une coche blanche sur fond bleu"
+          width={64}
+          height={64}
+          className="mx-auto mb-3 h-16 w-16"
+        />
         <h1 className="mb-2 text-center text-3xl font-bold text-brand">
           DevisVite
         </h1>
@@ -55,6 +68,11 @@ export default function LoginPage() {
           On relance à votre place.
         </p>
 
+        {notice && (
+          <p role="status" className="mb-4 rounded-xl bg-green-50 p-3 text-sm text-green-800">
+            {notice}
+          </p>
+        )}
         {sent ? (
           <div className="card text-center">
             <p className="text-4xl">📬</p>
@@ -83,15 +101,22 @@ export default function LoginPage() {
               />
             </div>
             {error && (
-              <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+              <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
                 {error}
               </p>
             )}
             <button type="submit" disabled={loading} className="btn-primary">
               {loading ? 'Envoi…' : 'Recevoir mon lien de connexion'}
             </button>
-            <p className="text-center text-sm text-slate-500">
+            <p className="text-center text-sm text-slate-600">
               Pas de mot de passe à retenir. Un lien magique, c&apos;est tout.
+            </p>
+            <p className="text-center text-sm text-slate-600">
+              En continuant, vous acceptez les{' '}
+              <Link href="/cgu" className="font-medium text-brand underline">conditions d&apos;utilisation</Link>{' '}
+              et reconnaissez avoir lu la{' '}
+              <Link href="/confidentialite" className="font-medium text-brand underline">politique de confidentialité</Link>.
+              Seul votre email est collecté à cette étape.
             </p>
           </form>
         )}

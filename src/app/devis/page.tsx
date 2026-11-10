@@ -3,13 +3,15 @@ import { createClient } from '@/lib/supabase/server';
 import { requireCompany } from '@/lib/quotes-server';
 import { computeQuoteTotals, formatEuro, type LineInput, type VatRate } from '@/lib/money';
 
+export const metadata = { title: 'Mes devis', robots: { index: false, follow: false } };
+
 const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
   draft: { label: 'Brouillon', cls: 'bg-slate-100 text-slate-700' },
   sent: { label: 'Envoyé', cls: 'bg-blue-100 text-blue-800' },
   viewed: { label: 'Consulté', cls: 'bg-amber-100 text-amber-800' },
   accepted: { label: 'Accepté ✓', cls: 'bg-green-100 text-green-800' },
   refused: { label: 'Refusé', cls: 'bg-red-100 text-red-700' },
-  expired: { label: 'Expiré', cls: 'bg-slate-100 text-slate-500' },
+  expired: { label: 'Expiré', cls: 'bg-slate-100 text-slate-600' },
 };
 
 export default async function DevisListPage({
@@ -28,7 +30,7 @@ export default async function DevisListPage({
     .order('created_at', { ascending: false });
 
   return (
-    <main className="mx-auto max-w-md px-5 py-8">
+    <main id="contenu" className="mx-auto max-w-md px-5 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Mes devis</h1>
         <Link href="/devis/nouveau" className="rounded-xl bg-brand px-4 py-2.5 font-semibold text-white">
@@ -37,7 +39,7 @@ export default async function DevisListPage({
       </div>
 
       {error && (
-        <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        <p role="alert" className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>
       )}
 
       {(quotes ?? []).length === 0 ? (
@@ -75,7 +77,7 @@ export default async function DevisListPage({
                         {q.client?.name}
                         {q.title ? ` — ${q.title}` : ''}
                       </p>
-                      <p className="mt-1 text-xs text-slate-400">
+                      <p className="mt-1 text-xs text-slate-500">
                         {new Date(q.created_at).toLocaleDateString('fr-FR')}
                       </p>
                     </div>

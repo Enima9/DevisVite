@@ -237,7 +237,7 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
       <section className="card space-y-4">
         <h2 className="font-bold text-lg">1. Décrivez ou dictez le chantier</h2>
         <textarea
-          className="input min-h-[110px] text-lg"
+          aria-label="Description du chantier" aria-describedby="ia-info" className="input min-h-[110px] text-lg"
           placeholder="Ex. : remplacement d'un chauffe-eau 200 litres, avec main-d'œuvre et déplacement…"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -246,6 +246,7 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
           <button
             type="button"
             onClick={dictation.toggle}
+            aria-pressed={dictation.listening}
             disabled={!dictation.supported || aiLoading}
             className={`btn-secondary !w-auto flex-1 ${
               dictation.listening ? '!border-red-400 !bg-red-50 !text-red-700 animate-pulse' : ''
@@ -262,15 +263,20 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
             {aiLoading ? 'Génération…' : '⚡ Générer le devis'}
           </button>
         </div>
+        <p id="ia-info" className="text-sm text-slate-600">
+          Votre description est envoyée à notre prestataire d&apos;IA (Anthropic, États-Unis) pour générer le brouillon :
+          n&apos;y écrivez pas le nom ou le téléphone de votre client. La dictée utilise la reconnaissance vocale de votre
+          navigateur (Google, Microsoft ou Apple). <a href="/confidentialite" target="_blank" rel="noopener noreferrer" className="font-medium text-brand underline">En savoir plus</a>
+        </p>
         {!dictation.supported && (
           <p className="text-sm text-slate-500">
             La dictée vocale n&apos;est pas disponible sur ce navigateur. Tapez votre
             description, ça marche aussi (navigateurs recommandés : Chrome, Edge, Samsung Internet).
           </p>
         )}
-        {dictation.error && <p className="text-sm text-red-600">{dictation.error}</p>}
+        {dictation.error && <p role="alert" className="text-sm text-red-700">{dictation.error}</p>}
         {aiError && (
-          <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{aiError}</p>
+          <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{aiError}</p>
         )}
         {aiQuestions.length > 0 && (
           <div className="rounded-xl bg-amber-50 p-4">
@@ -304,7 +310,7 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
       <section className="card space-y-4">
         <h2 className="font-bold text-lg">2. Le client</h2>
         {clients.length > 0 && (
-          <select className="input" value={clientId} onChange={(e) => setClientId(e.target.value)}>
+          <select aria-label="Client" className="input" value={clientId} onChange={(e) => setClientId(e.target.value)}>
             <option value="">— Nouveau client —</option>
             {clients.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -313,10 +319,10 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
         )}
         {!clientId && (
           <div className="space-y-3">
-            <input className="input" placeholder="Nom du client *" value={newClientName} onChange={(e) => setNewClientName(e.target.value)} />
-            <input className="input" type="email" inputMode="email" placeholder="Email (pour l'envoi)" value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} />
-            <input className="input" type="tel" inputMode="tel" placeholder="Téléphone" value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} />
-            <input className="input" placeholder="Adresse du chantier" value={newClientAddress} onChange={(e) => setNewClientAddress(e.target.value)} />
+            <input className="input" aria-label="Nom du client" placeholder="Nom du client *" value={newClientName} onChange={(e) => setNewClientName(e.target.value)} />
+            <input className="input" type="email" inputMode="email" aria-label="Email du client" placeholder="Email (pour l'envoi)" value={newClientEmail} onChange={(e) => setNewClientEmail(e.target.value)} />
+            <input className="input" type="tel" inputMode="tel" aria-label="Téléphone du client" placeholder="Téléphone" value={newClientPhone} onChange={(e) => setNewClientPhone(e.target.value)} />
+            <input className="input" aria-label="Adresse du chantier" placeholder="Adresse du chantier" value={newClientAddress} onChange={(e) => setNewClientAddress(e.target.value)} />
           </div>
         )}
         {selectedClient?.site_address && (
@@ -331,6 +337,7 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
           <div className="px-1">
             <label className="label">Ajouter depuis mon catalogue</label>
             <select
+              aria-label="Ajouter depuis mon catalogue"
               className="input"
               value=""
               onChange={(e) => {
@@ -354,7 +361,7 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold">{i + 1}</span>
               <input
                 className="input flex-1"
-                placeholder="Désignation (ex. Remplacement chauffe-eau)"
+                aria-label={`Désignation de la ligne ${i + 1}`} placeholder="Désignation (ex. Remplacement chauffe-eau)"
                 value={l.label}
                 onChange={(e) => updateLine(l.key, { label: e.target.value })}
               />
@@ -367,11 +374,11 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
             <div className="grid grid-cols-3 gap-2">
               <div>
                 <label className="label">Quantité</label>
-                <input className="input" inputMode="decimal" value={l.quantity} onChange={(e) => updateLine(l.key, { quantity: e.target.value })} />
+                <input aria-label={`Quantité, ligne ${i + 1}`} className="input" inputMode="decimal" value={l.quantity} onChange={(e) => updateLine(l.key, { quantity: e.target.value })} />
               </div>
               <div>
                 <label className="label">Unité</label>
-                <select className="input" value={l.unit} onChange={(e) => updateLine(l.key, { unit: e.target.value as Unit })}>
+                <select aria-label={`Unité, ligne ${i + 1}`} className="input" value={l.unit} onChange={(e) => updateLine(l.key, { unit: e.target.value as Unit })}>
                   {UNITS.map(([value, label]) => (
                     <option key={value} value={value}>{label}</option>
                   ))}
@@ -380,6 +387,7 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
               <div>
                 <label className="label">P.U. HT €</label>
                 <input
+                  aria-label={`P.U. HT €, ligne ${i + 1}`}
                   className={`input ${l.estimated ? '!border-amber-400' : ''}`}
                   inputMode="decimal"
                   value={l.unit_price_ht}
@@ -390,7 +398,7 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="label">TVA</label>
-                <select className="input" value={l.vat_rate} onChange={(e) => updateLine(l.key, { vat_rate: e.target.value })}>
+                <select aria-label={`TVA, ligne ${i + 1}`} className="input" value={l.vat_rate} onChange={(e) => updateLine(l.key, { vat_rate: e.target.value })}>
                   {VAT_RATES.map((r) => (
                     <option key={r} value={r}>{r.toLocaleString('fr-FR')} %</option>
                   ))}
@@ -398,16 +406,16 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
               </div>
               <div>
                 <label className="label">Remise ligne %</label>
-                <input className="input" inputMode="decimal" value={l.discount} onChange={(e) => updateLine(l.key, { discount: e.target.value })} />
+                <input aria-label={`Remise ligne %, ligne ${i + 1}`} className="input" inputMode="decimal" value={l.discount} onChange={(e) => updateLine(l.key, { discount: e.target.value })} />
               </div>
             </div>
             <div className="flex items-center justify-between">
               <p className="font-bold">{formatEuro(totals.lines[i].line_ht_cents)} HT</p>
               <div className="flex gap-2 text-sm">
-                <button type="button" onClick={() => moveLine(i, -1)} className="rounded-lg border border-slate-300 px-3 py-1.5">↑</button>
-                <button type="button" onClick={() => moveLine(i, 1)} className="rounded-lg border border-slate-300 px-3 py-1.5">↓</button>
+                <button type="button" onClick={() => moveLine(i, -1)} aria-label={`Monter la ligne ${i + 1}`} className="rounded-lg border border-slate-500 px-3 py-1.5">↑</button>
+                <button type="button" onClick={() => moveLine(i, 1)} aria-label={`Descendre la ligne ${i + 1}`} className="rounded-lg border border-slate-500 px-3 py-1.5">↓</button>
                 {lines.length > 1 && (
-                  <button type="button" onClick={() => removeLine(l.key)} className="rounded-lg border border-red-200 px-3 py-1.5 text-red-600">✕</button>
+                  <button type="button" onClick={() => removeLine(l.key)} aria-label={`Supprimer la ligne ${i + 1}`} className="rounded-lg border border-red-600 px-3 py-1.5 text-red-700">✕</button>
                 )}
               </div>
             </div>
@@ -421,31 +429,31 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
         <h2 className="font-bold text-lg">4. Options</h2>
         <div>
           <label className="label">Intitulé du devis (optionnel)</label>
-          <input className="input" placeholder="Ex. Remplacement chauffe-eau" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <input aria-label="Intitulé du devis" className="input" placeholder="Ex. Remplacement chauffe-eau" value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="label">Remise globale €</label>
-            <input className="input" inputMode="decimal" value={globalDiscount} onChange={(e) => setGlobalDiscount(e.target.value)} />
+            <input aria-label="Remise globale €" className="input" inputMode="decimal" value={globalDiscount} onChange={(e) => setGlobalDiscount(e.target.value)} />
           </div>
           <div>
             <label className="label">Acompte €</label>
-            <input className="input" inputMode="decimal" value={deposit} onChange={(e) => setDeposit(e.target.value)} />
+            <input aria-label="Acompte €" className="input" inputMode="decimal" value={deposit} onChange={(e) => setDeposit(e.target.value)} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="label">Valable jusqu&apos;au</label>
-            <input className="input" type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
+            <input aria-label="Valable jusqu'au" className="input" type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} />
           </div>
           <div>
             <label className="label">Délai d&apos;exécution</label>
-            <input className="input" placeholder="Ex. 2 semaines" value={executionDelay} onChange={(e) => setExecutionDelay(e.target.value)} />
+            <input aria-label="Délai d'exécution" className="input" placeholder="Ex. 2 semaines" value={executionDelay} onChange={(e) => setExecutionDelay(e.target.value)} />
           </div>
         </div>
         <div>
           <label className="label">Message d&apos;introduction (optionnel)</label>
-          <textarea className="input min-h-[70px]" placeholder="Bonjour Monsieur Dupuis, voici comme convenu…" value={introText} onChange={(e) => setIntroText(e.target.value)} />
+          <textarea aria-label="Message d'introduction" className="input min-h-[70px]" placeholder="Bonjour Monsieur Dupuis, voici comme convenu…" value={introText} onChange={(e) => setIntroText(e.target.value)} />
         </div>
       </section>
 
@@ -487,7 +495,7 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
       {/* Barre de validation */}
       <div className="fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         {saveState?.error && (
-          <p className="mx-auto mb-3 max-w-md rounded-xl bg-red-50 p-3 text-sm text-red-700">{saveState.error}</p>
+          <p role="alert" className="mx-auto mb-3 max-w-md rounded-xl bg-red-50 p-3 text-sm text-red-700">{saveState.error}</p>
         )}
         <div className="mx-auto flex max-w-md items-center gap-3">
           <div className="text-right">

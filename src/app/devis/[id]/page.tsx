@@ -5,13 +5,15 @@ import { requireCompany } from '@/lib/quotes-server';
 import { computeQuoteTotals, formatEuro, UNIT_LABELS, type LineInput, type VatRate } from '@/lib/money';
 import { deleteQuote, markQuoteStatus } from '@/app/actions/quotes';
 
+export const metadata = { title: 'Détail du devis', robots: { index: false, follow: false } };
+
 const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
   draft: { label: 'Brouillon', cls: 'bg-slate-100 text-slate-700' },
   sent: { label: 'Envoyé', cls: 'bg-blue-100 text-blue-800' },
   viewed: { label: 'Consulté', cls: 'bg-amber-100 text-amber-800' },
   accepted: { label: 'Accepté ✓', cls: 'bg-green-100 text-green-800' },
   refused: { label: 'Refusé', cls: 'bg-red-100 text-red-700' },
-  expired: { label: 'Expiré', cls: 'bg-slate-100 text-slate-500' },
+  expired: { label: 'Expiré', cls: 'bg-slate-100 text-slate-600' },
 };
 
 export default async function DevisDetailPage({
@@ -69,7 +71,7 @@ export default async function DevisDetailPage({
   };
 
   return (
-    <main className="mx-auto max-w-md px-5 py-8">
+    <main id="contenu" className="mx-auto max-w-md px-5 py-8">
       <Link href="/devis" className="text-sm text-brand">← Mes devis</Link>
       <div className="mt-2 mb-6 flex items-start justify-between gap-3">
         <div>
@@ -89,7 +91,7 @@ export default async function DevisDetailPage({
             <li key={l.id} className="flex justify-between gap-3 py-2 text-sm">
               <span>
                 {l.label}
-                <span className="block text-xs text-slate-400">
+                <span className="block text-xs text-slate-500">
                   {Number(l.quantity).toLocaleString('fr-FR')} {UNIT_LABELS[l.unit as keyof typeof UNIT_LABELS]} × {Number(l.unit_price_ht).toLocaleString('fr-FR')} € HT
                 </span>
               </span>
@@ -149,7 +151,7 @@ export default async function DevisDetailPage({
           {(events ?? []).map((e) => (
             <li key={e.id} className="flex justify-between gap-3">
               <span>{EVENT_LABELS[e.event_type] ?? e.event_type}</span>
-              <span className="text-slate-400">
+              <span className="text-slate-500">
                 {new Date(e.created_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}
               </span>
             </li>

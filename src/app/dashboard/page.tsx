@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import { requireCompany } from '@/lib/quotes-server';
 
+export const metadata = { title: 'Tableau de bord', robots: { index: false, follow: false } };
+
 export default async function DashboardPage() {
   const { company } = await requireCompany();
 
   return (
-    <main className="mx-auto max-w-md px-5 py-8">
+    <main id="contenu" className="mx-auto max-w-md px-5 py-8">
       <h1 className="text-2xl font-bold">Bonjour {company.name} 👋</h1>
       <p className="mt-1 mb-6 text-slate-600">Que voulez-vous faire ?</p>
       <div className="space-y-3">

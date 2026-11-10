@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { companySchema } from '@/lib/validation';
 import { seedRowsForTrade } from '@/lib/catalog-seeds';
+import { LEGAL_VERSION } from '@/lib/legal';
 
 export async function saveCompany(formData: FormData) {
   const supabase = await createClient();
@@ -38,9 +39,22 @@ export async function saveCompany(formData: FormData) {
 
   const values = parsed.data;
 
+  // Acceptation des conditions : obligatoire, avec date et version conservées comme preuve
+  if (formData.get('terms') !== 'on') {
+    redirect(
+      '/onboarding?error=' +
+        encodeURIComponent('Vous devez accepter les conditions d’utilisation et la politique de confidentialité.')
+    );
+  }
+
   const { data: company, error: companyError } = await supabase
     .from('companies')
-    .insert({ ...values, owner_id: user.id })
+    .insert({
+      ...values,
+      owner_id: user.id,
+      terms_accepted_at: new Date().toISOString(),
+      terms_version: LEGAL_VERSION,
+    })
     .select('id')
     .single();
 
@@ -121,4 +135,30 @@ export async function updateCompany(formData: FormData) {
 
   revalidatePath('/', 'layout');
   redirect('/reglages?saved=1');
+}
+
+/** Droit à l'effacement : supprime le compte et, en cascade, toutes les données liées. */
+export async function deleteAccount(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  if (String(formData.get('confirm') ?? '').trim().toUpperCase() !== 'SUPPRIMER') {
+    redirect('/reglages?error=' + encodeURIComponent('Tapez SUPPRIMER pour confirmer la suppression de votre compte.'));
+  }
+
+  const { error } = await supabase.rpc('delete_my_account');
+  if (error) {
+    console.error('[deleteAccount]', error.message);
+    redirect('/reglages?error=' + encodeURIComponent('La suppression a échoué. Réessayez ou contactez-nous.'));
+  }
+
+  try {
+    await supabase.auth.signOut({ scope: 'local' });
+  } catch {
+    // Le compte n'existe plus : on efface simplement la session locale.
+  }
+  redirect('/login?compte-supprime=1');
 }

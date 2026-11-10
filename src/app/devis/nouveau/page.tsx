@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { requireCompany } from '@/lib/quotes-server';
 import QuoteEditor from '../editor';
 
+export const metadata = { title: 'Nouveau devis', robots: { index: false, follow: false } };
+
 export default async function NouveauDevisPage({
   searchParams,
 }: {
@@ -17,11 +19,11 @@ export default async function NouveauDevisPage({
   ]);
 
   return (
-    <main className="mx-auto max-w-md px-5 py-8">
+    <main id="contenu" className="mx-auto max-w-md px-5 py-8">
       <h1 className="text-2xl font-bold">Nouveau devis</h1>
       <p className="mt-1 mb-6 text-slate-600">Rien ne part sans votre validation : vous vérifiez tout avant l'envoi.</p>
       {error && (
-        <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>
+        <p role="alert" className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>
       )}
       <QuoteEditor
         catalogue={(catalogue ?? []) as never}
