@@ -8,7 +8,7 @@ export default async function DashboardPage() {
 
   return (
     <main id="contenu" className="mx-auto max-w-md px-5 py-8">
-      <h1 className="text-2xl font-bold">Bonjour {company.name} 👋</h1>
+      <h1 className="text-3xl font-bold">Bonjour {company.name}</h1>
       <p className="mt-1 mb-6 text-slate-600">Que voulez-vous faire ?</p>
       <div className="space-y-3">
         <Link href="/devis/nouveau" className="btn-primary">

@@ -50,19 +50,20 @@ export default function LoginPage() {
 
   return (
     <main id="contenu" className="flex min-h-[calc(100dvh-9rem)] flex-col items-center justify-center px-5 py-8">
-      <div className="w-full max-w-sm">
+      <div className="sheet relative w-full max-w-sm">
+        <span className="stamp absolute -top-4 right-4 bg-white" aria-hidden="true">
+          Devis
+        </span>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/icon.svg"
           alt="Logo DevisVite : une coche blanche sur fond bleu"
-          width={64}
-          height={64}
-          className="mx-auto mb-3 h-16 w-16"
+          width={48}
+          height={48}
+          className="mb-3 h-12 w-12"
         />
-        <h1 className="mb-2 text-center text-3xl font-bold text-brand">
-          DevisVite
-        </h1>
-        <p className="mb-8 text-center text-slate-600">
+        <h1 className="text-4xl font-bold text-ink">DevisVite</h1>
+        <p className="mb-6 mt-2 border-b border-slate-300 pb-5 text-slate-700">
           Dictez le chantier, vérifiez, envoyez.
           <br />
           On relance à votre place.
@@ -74,7 +75,7 @@ export default function LoginPage() {
           </p>
         )}
         {sent ? (
-          <div className="card text-center">
+          <div className="text-center">
             <p className="text-4xl">📬</p>
             <p className="mt-3 text-lg font-semibold">Regardez vos emails</p>
             <p className="mt-2 text-slate-600">

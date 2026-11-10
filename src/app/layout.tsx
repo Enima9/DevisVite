@@ -1,5 +1,9 @@
 import type { Metadata, Viewport } from 'next';
+import { Source_Serif_4, Source_Sans_3 } from 'next/font/google';
 import './globals.css';
+
+const serif = Source_Serif_4({ subsets: ['latin'], variable: '--font-serif', display: 'swap', weight: ['600', '700'] });
+const sans = Source_Sans_3({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
 import SiteFooter from '@/components/site-footer';
 import { SITE } from '@/lib/legal';
 
@@ -25,7 +29,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#1d4ed8',
+  themeColor: '#1F4FBF',
 };
 
 // Données structurées (schema.org) : permettent aux moteurs et aux agents IA de comprendre le site.
@@ -45,7 +49,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fr">
+    <html lang="fr" className={`${serif.variable} ${sans.variable}`}>
       <body className="flex min-h-dvh flex-col antialiased">
         <a
           href="#contenu"

@@ -3,7 +3,7 @@ import { LEGAL_PAGES, SITE } from '@/lib/legal';
 
 export default function SiteFooter() {
   return (
-    <footer className="mt-8 border-t border-slate-200 bg-white px-5 pb-24 pt-6 text-sm text-slate-600">
+    <footer className="mt-8 border-t-4 border-ink bg-white px-5 pb-24 pt-6 text-sm text-slate-600">
       <div className="mx-auto max-w-2xl">
         <nav aria-label="Informations légales">
           <ul className="flex flex-wrap gap-x-5 gap-y-2">
