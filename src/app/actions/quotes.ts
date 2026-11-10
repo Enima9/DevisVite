@@ -7,18 +7,23 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 const lineSchema = z.object({
-  label: z.string().min(1),
+  label: z.string().trim().min(1, 'Chaque ligne doit avoir une désignation.'),
   unit: z.enum(['u', 'h', 'm2', 'ml', 'forfait']),
-  quantity: z.coerce.number().min(0),
-  unit_price_ht: z.coerce.number().min(0),
-  vat_rate: z.coerce.number().refine((v) => [0, 2.1, 5.5, 10, 20].includes(v), 'Taux de TVA invalide'),
+  quantity: z.coerce.number().min(0, 'La quantité ne peut pas être négative.'),
+  unit_price_ht: z.coerce.number().min(0, 'Le prix ne peut pas être négatif.'),
+  vat_rate: z.coerce.number().refine((v) => [0, 2.1, 5.5, 10, 20].includes(v), 'Taux de TVA invalide.'),
   discount: z.coerce.number().min(0).max(100).default(0),
   estimated: z.coerce.boolean().default(false),
   source: z.enum(['catalog', 'ai', 'manual']).default('manual'),
 });
 
-function fail(message: string): never {
-  redirect('/devis/nouveau?error=' + encodeURIComponent(message));
+export interface SaveQuoteState {
+  error: string;
+}
+
+/** Renvoie l'erreur au formulaire (qui reste rempli) au lieu de rediriger vers une page vierge. */
+function fail(message: string): SaveQuoteState {
+  return { error: message };
 }
 
 const payloadSchema = z
@@ -27,28 +32,31 @@ const payloadSchema = z
     client_id: z.string().uuid().optional(),
     new_client: z
       .object({
-        name: z.string().min(1),
-        email: z.string().email().optional().or(z.literal('')),
+        name: z.string().trim().min(1, 'Indiquez le nom du client.'),
+        email: z.string().email('Adresse email du client invalide.').optional().or(z.literal('')),
         phone: z.string().optional(),
         site_address: z.string().optional(),
       })
       .optional(),
     title: z.string().optional(),
     execution_delay: z.string().optional(),
-    valid_until: z.string().min(8),
+    valid_until: z.string().min(8, 'Indiquez la date de validité du devis.'),
     global_discount: z.coerce.number().min(0).default(0),
     deposit_amount: z.coerce.number().min(0).default(0),
     intro_text: z.string().optional(),
-    lines: z.array(lineSchema).min(1, 'Ajoutez au moins une ligne au devis'),
+    lines: z.array(lineSchema).min(1, 'Ajoutez au moins une ligne au devis.'),
     save_as_template: z.boolean().default(false),
     template_name: z.string().optional(),
   })
   .refine((p) => p.client_id || p.new_client, {
-    message: 'Choisissez un client ou créez-en un',
+    message: 'Choisissez un client ou créez-en un.',
     path: ['client_id'],
   });
 
-export async function saveQuote(formData: FormData) {
+export async function saveQuote(
+  _prev: SaveQuoteState | null,
+  formData: FormData
+): Promise<SaveQuoteState | null> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -66,12 +74,12 @@ export async function saveQuote(formData: FormData) {
   try {
     raw = JSON.parse(String(formData.get('payload') ?? '{}'));
   } catch {
-    fail('Données du devis invalides');
+    return fail('Données du devis invalides');
   }
 
   const parsed = payloadSchema.safeParse(raw);
   if (!parsed.success) {
-    fail(parsed.error.issues[0].message);
+    return fail(parsed.error.issues[0].message);
   }
   const p = parsed.data;
 
@@ -90,7 +98,7 @@ export async function saveQuote(formData: FormData) {
       .select('id')
       .single();
     if (error || !client) {
-      fail('Création du client impossible. Vérifiez les informations saisies et réessayez.');
+      return fail('Création du client impossible. Vérifiez les informations saisies et réessayez.');
     }
     clientId = client.id;
   }
@@ -117,10 +125,10 @@ export async function saveQuote(formData: FormData) {
       .eq('id', quoteId)
       .eq('status', 'draft');
     if (error) {
-      fail('Enregistrement impossible. Réessayez dans un instant.');
+      return fail('Enregistrement impossible. Réessayez dans un instant.');
     }
     const { error: delError } = await supabase.from('quote_lines').delete().eq('quote_id', quoteId);
-    if (delError) fail('Enregistrement impossible. Réessayez dans un instant.');
+    if (delError) return fail('Enregistrement impossible. Réessayez dans un instant.');
   } else {
     // Nouveau devis : référence DEV-<année>-000N (on retente si deux envois se croisent)
     let created: { id: string } | null = null;
@@ -135,10 +143,10 @@ export async function saveQuote(formData: FormData) {
         created = quote;
       } else if (error?.code !== '23505') {
         console.error('[saveQuote] création du devis impossible :', error?.message);
-        fail('Création du devis impossible. Réessayez dans un instant.');
+        return fail('Création du devis impossible. Réessayez dans un instant.');
       }
     }
-    if (!created) fail('Création du devis impossible (numérotation). Réessayez.');
+    if (!created) return fail('Création du devis impossible (numérotation). Réessayez.');
     quoteId = created.id;
     const usedAi = p.lines.some((l) => l.source === 'ai');
     await supabase.from('quote_events').insert({
@@ -169,7 +177,7 @@ export async function saveQuote(formData: FormData) {
     console.error('[saveQuote] insertion des lignes impossible :', linesError.message);
     // Un devis sans lignes n'a aucun sens : on annule la création.
     if (isNewQuote) await supabase.from('quotes').delete().eq('id', quoteId!);
-    fail('Les lignes du devis n\u2019ont pas pu être enregistrées. Réessayez.');
+    return fail('Les lignes du devis n\u2019ont pas pu être enregistrées. Réessayez.');
   }
 
   // Modèle réutilisable

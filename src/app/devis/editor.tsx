@@ -1,11 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useActionState, useMemo, useState } from 'react';
 import { computeQuoteTotals, UNIT_LABELS, VAT_RATES, formatEuro, parseEuroInput, type Unit, type VatRate } from '@/lib/money';
 import type { CatalogRow, ClientRow } from '@/lib/quotes-server';
 import type { EditorLineAi } from '@/lib/ai/schema';
 import { useDictation } from '@/lib/use-dictation';
-import { saveQuote } from '@/app/actions/quotes';
+import { saveQuote, type SaveQuoteState } from '@/app/actions/quotes';
 
 const UNITS = Object.entries(UNIT_LABELS) as [Unit, string][];
 
@@ -42,6 +42,7 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
     return d.toISOString().slice(0, 10);
   };
 
+  const [saveState, formAction, saving] = useActionState<SaveQuoteState | null, FormData>(saveQuote, null);
   const [lines, setLines] = useState<EditorLine[]>([blankLine(defaultVatRate)]);
   const [clientId, setClientId] = useState('');
   const [newClientName, setNewClientName] = useState('');
@@ -204,7 +205,10 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
       global_discount: parseEuroInput(globalDiscount),
       deposit_amount: parseEuroInput(deposit),
       intro_text: introText,
-      lines: lines.map((l) => ({
+      // Les lignes entièrement vides (ex. la ligne de départ) sont ignorées
+      lines: lines
+        .filter((l) => l.label.trim() || l.unit_price_ht.trim())
+        .map((l) => ({
         label: l.label,
         unit: l.unit,
         quantity: parseEuroInput(l.quantity),
@@ -226,7 +230,7 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
   const hasEstimated = lines.some((l) => l.estimated);
 
   return (
-    <form id="quote-form" action={saveQuote} className="space-y-6 pb-32">
+    <form id="quote-form" action={formAction} className="space-y-6 pb-32">
       <input type="hidden" name="payload" id="hidden-payload" value="{}" />
 
       {/* 1. Décrire ou dicter le chantier → IA */}
@@ -482,6 +486,9 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
 
       {/* Barre de validation */}
       <div className="fixed inset-x-0 bottom-0 border-t border-slate-200 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        {saveState?.error && (
+          <p className="mx-auto mb-3 max-w-md rounded-xl bg-red-50 p-3 text-sm text-red-700">{saveState.error}</p>
+        )}
         <div className="mx-auto flex max-w-md items-center gap-3">
           <div className="text-right">
             <p className="text-xs text-slate-500">Total TTC</p>
@@ -490,10 +497,10 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
           <button
             type="button"
             onClick={submit}
-            disabled={lines.every((l) => !l.label.trim()) || (!clientId && !newClientName.trim())}
+            disabled={saving || lines.every((l) => !l.label.trim()) || (!clientId && !newClientName.trim())}
             className="btn-primary !w-auto flex-1"
           >
-            Créer le devis ✓
+            {saving ? 'Enregistrement…' : 'Créer le devis ✓'}
           </button>
         </div>
       </div>
