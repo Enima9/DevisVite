@@ -40,7 +40,13 @@ export default function LoginPage() {
     });
 
     if (error) {
-      setError('Impossible d\u2019envoyer le lien. Vérifiez votre adresse email.');
+      // 429 : trop de demandes rapprochées (limite d'envoi d'emails de Supabase)
+      const tooMany = error.status === 429 || error.code === 'over_email_send_rate_limit';
+      setError(
+        tooMany
+          ? 'Un lien vient déjà d\u2019être envoyé. Regardez vos emails (et les spams), ou patientez une minute avant d\u2019en redemander un.'
+          : 'Impossible d\u2019envoyer le lien. Vérifiez votre adresse email.'
+      );
       setLoading(false);
     } else {
       setSent(true);
