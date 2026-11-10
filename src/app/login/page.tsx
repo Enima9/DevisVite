@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
@@ -8,6 +8,18 @@ export default function LoginPage() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Supabase renvoie les erreurs de lien dans l'adresse (#error_code=otp_expired…)
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes('error')) {
+      setError(
+        hash.includes('otp_expired')
+          ? 'Ce lien de connexion a expiré ou a déjà été utilisé. Demandez-en un nouveau ci-dessous.'
+          : 'La connexion a échoué. Demandez un nouveau lien ci-dessous.'
+      );
+    }
+  }, []);
 
   async function sendMagicLink(e: React.FormEvent) {
     e.preventDefault();

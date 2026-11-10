@@ -18,6 +18,9 @@ export default async function DashboardPage() {
         <Link href="/catalogue" className="btn-secondary">
           Mon catalogue
         </Link>
+        <Link href="/reglages" className="btn-secondary">
+          Réglages
+        </Link>
       </div>
       <form action="/auth/signout" method="post" className="mt-8 text-center">
         <button type="submit" className="text-sm font-semibold text-slate-500 underline">

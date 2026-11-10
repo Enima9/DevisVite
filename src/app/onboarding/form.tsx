@@ -2,28 +2,35 @@
 
 import { useState } from 'react';
 import { TRADES } from '@/lib/catalog-seeds';
-import { saveCompany } from '@/app/actions/company';
+import { saveCompany, updateCompany } from '@/app/actions/company';
+import type { CompanyProfile } from '@/lib/quotes-server';
 
 const VAT_OPTIONS = [20, 10, 5.5, 0];
 
-export default function OnboardingForm({ defaultEmail }: { defaultEmail: string }) {
-  const [trade, setTrade] = useState('');
-  const [vatExemption, setVatExemption] = useState(false);
+type Props =
+  | { mode?: 'create'; defaultEmail: string; initial?: undefined }
+  | { mode: 'edit'; defaultEmail?: string; initial: CompanyProfile };
+
+export default function OnboardingForm(props: Props) {
+  const edit = props.mode === 'edit';
+  const init = props.initial;
+  const [trade, setTrade] = useState(init?.trade ?? '');
+  const [vatExemption, setVatExemption] = useState(init?.vat_exemption ?? false);
 
   return (
-    <form action={saveCompany} className="space-y-6">
+    <form action={edit ? updateCompany : saveCompany} className="space-y-6">
       <section className="card space-y-4">
         <h2 className="font-bold text-lg">Votre entreprise</h2>
 
         <div>
           <label htmlFor="name" className="label">Nom de l'entreprise *</label>
-          <input id="name" name="name" required className="input" placeholder="Plomberie Dubois" />
+          <input id="name" name="name" required className="input" placeholder="Plomberie Dubois" defaultValue={init?.name ?? ''} />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="legal_form" className="label">Forme juridique</label>
-            <select id="legal_form" name="legal_form" className="input" defaultValue="">
+            <select id="legal_form" name="legal_form" className="input" defaultValue={init?.legal_form ?? ''}>
               <option value="">—</option>
               <option>Micro-entreprise</option>
               <option>EI</option>
@@ -35,28 +42,28 @@ export default function OnboardingForm({ defaultEmail }: { defaultEmail: string 
           </div>
           <div>
             <label htmlFor="siret" className="label">SIRET</label>
-            <input id="siret" name="siret" className="input" inputMode="numeric" placeholder="14 chiffres" />
+            <input id="siret" name="siret" className="input" inputMode="numeric" placeholder="14 chiffres" defaultValue={init?.siret ?? ''} />
           </div>
         </div>
 
         <div>
           <label htmlFor="address" className="label">Adresse</label>
-          <input id="address" name="address" className="input" placeholder="12 rue des Lilas, 69003 Lyon" />
+          <input id="address" name="address" className="input" placeholder="12 rue des Lilas, 69003 Lyon" defaultValue={init?.address ?? ''} />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label htmlFor="phone" className="label">Téléphone</label>
-            <input id="phone" name="phone" className="input" type="tel" inputMode="tel" />
+            <input id="phone" name="phone" className="input" type="tel" inputMode="tel" defaultValue={init?.phone ?? ''} />
           </div>
           <div>
             <label htmlFor="email" className="label">Email</label>
-            <input id="email" name="email" className="input" type="email" defaultValue={defaultEmail} />
+            <input id="email" name="email" className="input" type="email" defaultValue={init ? (init.email ?? '') : (props.defaultEmail ?? '')} />
           </div>
         </div>
 
         <div>
-          <label htmlFor="trade" className="label">Votre métier * (pré-remplit vos tarifs)</label>
+          <label htmlFor="trade" className="label">Votre métier *{edit ? '' : ' (pré-remplit vos tarifs)'}</label>
           <select
             id="trade"
             name="trade"
@@ -78,7 +85,7 @@ export default function OnboardingForm({ defaultEmail }: { defaultEmail: string 
 
         <div>
           <label htmlFor="default_vat_rate" className="label">Taux de TVA par défaut</label>
-          <select id="default_vat_rate" name="default_vat_rate" className="input" defaultValue="20">
+          <select id="default_vat_rate" name="default_vat_rate" className="input" defaultValue={String(init ? Number(init.default_vat_rate) : 20)}>
             {VAT_OPTIONS.map((r) => (
               <option key={r} value={r}>{r} %</option>
             ))}
@@ -105,7 +112,7 @@ export default function OnboardingForm({ defaultEmail }: { defaultEmail: string 
             id="payment_terms"
             name="payment_terms"
             className="input min-h-[80px]"
-            defaultValue="Paiement à 30 jours après réception de facture."
+            defaultValue={init?.payment_terms ?? 'Paiement à 30 jours après réception de facture.'}
           />
         </div>
 
@@ -117,7 +124,7 @@ export default function OnboardingForm({ defaultEmail }: { defaultEmail: string 
             type="number"
             min={1}
             max={365}
-            defaultValue={30}
+            defaultValue={init?.quote_validity_days ?? 30}
             className="input"
           />
         </div>
@@ -127,11 +134,11 @@ export default function OnboardingForm({ defaultEmail }: { defaultEmail: string 
         <h2 className="font-bold text-lg">Assurance décennale (optionnel)</h2>
         <div>
           <label htmlFor="insurance_provider" className="label">Assureur</label>
-          <input id="insurance_provider" name="insurance_provider" className="input" placeholder="AXA, MAIF…" />
+          <input id="insurance_provider" name="insurance_provider" className="input" placeholder="AXA, MAIF…" defaultValue={init?.insurance_provider ?? ''} />
         </div>
         <div>
           <label htmlFor="insurance_policy_number" className="label">N° de police</label>
-          <input id="insurance_policy_number" name="insurance_policy_number" className="input" />
+          <input id="insurance_policy_number" name="insurance_policy_number" className="input" defaultValue={init?.insurance_policy_number ?? ''} />
         </div>
       </section>
 
@@ -143,22 +150,24 @@ export default function OnboardingForm({ defaultEmail }: { defaultEmail: string 
             id="primary_color"
             name="primary_color"
             type="color"
-            defaultValue="#1d4ed8"
+            defaultValue={init?.primary_color ?? '#1d4ed8'}
             className="h-14 w-full rounded-xl border-2 border-slate-300"
           />
         </div>
         <div>
           <label htmlFor="iban" className="label">IBAN (optionnel, pour vos factures)</label>
-          <input id="iban" name="iban" className="input" placeholder="FR76…" />
+          <input id="iban" name="iban" className="input" placeholder="FR76…" defaultValue={init?.iban ?? ''} />
         </div>
       </section>
 
       <button type="submit" className="btn-primary">
-        Créer mon entreprise →
+        {edit ? 'Enregistrer les réglages' : 'Créer mon entreprise →'}
       </button>
-      <p className="pb-8 text-center text-sm text-slate-500">
-        Tout est modifiable plus tard dans les réglages.
-      </p>
+      {!edit && (
+        <p className="pb-8 text-center text-sm text-slate-500">
+          Tout est modifiable plus tard dans les réglages.
+        </p>
+      )}
     </form>
   );
 }

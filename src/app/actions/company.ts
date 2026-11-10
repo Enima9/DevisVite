@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 import { companySchema } from '@/lib/validation';
 import { seedRowsForTrade } from '@/lib/catalog-seeds';
 
@@ -58,4 +59,66 @@ export async function saveCompany(formData: FormData) {
   }
 
   redirect('/dashboard?bienvenue=1');
+}
+
+/** Met à jour le profil de l'entreprise (page Réglages). Les champs vidés sont remis à NULL. */
+export async function updateCompany(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const text = (key: string) => String(formData.get(key) ?? '').trim();
+  const parsed = companySchema.safeParse({
+    name: text('name'),
+    legal_form: text('legal_form') || undefined,
+    siret: text('siret') || undefined,
+    address: text('address') || undefined,
+    phone: text('phone') || undefined,
+    email: text('email'),
+    primary_color: text('primary_color') || '#1d4ed8',
+    iban: text('iban') || undefined,
+    insurance_provider: text('insurance_provider') || undefined,
+    insurance_policy_number: text('insurance_policy_number') || undefined,
+    default_vat_rate: Number(formData.get('default_vat_rate')),
+    vat_exemption: formData.get('vat_exemption') === 'on',
+    payment_terms: text('payment_terms') || undefined,
+    quote_validity_days: formData.get('quote_validity_days'),
+    trade: text('trade'),
+  });
+  if (!parsed.success) {
+    redirect('/reglages?error=' + encodeURIComponent(parsed.error.issues[0].message));
+  }
+  const v = parsed.data;
+
+  // Liste explicite : on ne touche jamais aux champs sensibles (propriétaire, budget IA…)
+  const { error } = await supabase
+    .from('companies')
+    .update({
+      name: v.name.trim(),
+      legal_form: v.legal_form ?? null,
+      siret: v.siret ? v.siret.replace(/\s/g, '') : null,
+      address: v.address ?? null,
+      phone: v.phone ?? null,
+      email: v.email || null,
+      primary_color: v.primary_color,
+      iban: v.iban ?? null,
+      insurance_provider: v.insurance_provider ?? null,
+      insurance_policy_number: v.insurance_policy_number ?? null,
+      default_vat_rate: v.default_vat_rate,
+      vat_exemption: v.vat_exemption,
+      payment_terms: v.payment_terms,
+      quote_validity_days: v.quote_validity_days,
+      trade: v.trade,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('owner_id', user.id);
+  if (error) {
+    console.error('[updateCompany]', error.message);
+    redirect('/reglages?error=' + encodeURIComponent('Les réglages n\u2019ont pas pu être enregistrés. Réessayez.'));
+  }
+
+  revalidatePath('/', 'layout');
+  redirect('/reglages?saved=1');
 }
