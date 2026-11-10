@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { companySchema } from '@/lib/validation';
 import { seedRowsForTrade } from '@/lib/catalog-seeds';
 import { LEGAL_VERSION } from '@/lib/legal';
+import { stripeRequest } from '@/lib/stripe';
 
 export async function saveCompany(formData: FormData) {
   const supabase = await createClient();
@@ -147,6 +148,22 @@ export async function deleteAccount(formData: FormData) {
 
   if (String(formData.get('confirm') ?? '').trim().toUpperCase() !== 'SUPPRIMER') {
     redirect('/reglages?error=' + encodeURIComponent('Tapez SUPPRIMER pour confirmer la suppression de votre compte.'));
+  }
+
+  // Résilie l'abonnement Stripe AVANT la suppression, pour ne plus prélever un compte supprimé.
+  if (process.env.STRIPE_SECRET_KEY) {
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('stripe_subscription_id, status')
+      .maybeSingle();
+    if (sub?.stripe_subscription_id && !['canceled', 'incomplete_expired'].includes(sub.status)) {
+      try {
+        await stripeRequest('DELETE', `/subscriptions/${sub.stripe_subscription_id}`);
+      } catch (e) {
+        console.error('[deleteAccount] résiliation Stripe', e);
+        redirect('/reglages?error=' + encodeURIComponent('Votre abonnement n’a pas pu être résilié. Résiliez-le depuis « Mon abonnement » puis réessayez.'));
+      }
+    }
   }
 
   const { error } = await supabase.rpc('delete_my_account');

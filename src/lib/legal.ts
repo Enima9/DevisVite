@@ -37,5 +37,6 @@ export const LEGAL_PAGES = [
   { href: '/mentions-legales', label: 'Mentions légales' },
   { href: '/confidentialite', label: 'Politique de confidentialité' },
   { href: '/cgu', label: 'Conditions d’utilisation' },
+  { href: '/cgv', label: 'Conditions de vente' },
   { href: '/cookies', label: 'Cookies' },
 ] as const;

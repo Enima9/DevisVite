@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { DevisPdf, type DevisPdfData } from '@/lib/pdf/devis-pdf';
+import { canDownloadQuotes } from '@/lib/billing';
 import type { LineInput, VatRate } from '@/lib/money';
 
 export const runtime = 'nodejs';
@@ -48,6 +49,14 @@ export async function GET(
   }));
 
   if (!company) return NextResponse.json({ error: 'Entreprise introuvable' }, { status: 404 });
+
+  // Téléchargement réservé aux abonnés (contrôle côté serveur, impossible à contourner)
+  if (!(await canDownloadQuotes(company.id))) {
+    return NextResponse.json(
+      { error: 'Abonnement requis pour télécharger le devis', subscribe: '/abonnement' },
+      { status: 402 }
+    );
+  }
 
   const data: DevisPdfData = {
     company,

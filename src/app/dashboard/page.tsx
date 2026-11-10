@@ -20,6 +20,9 @@ export default async function DashboardPage() {
         <Link href="/catalogue" className="btn-secondary">
           Mon catalogue
         </Link>
+        <Link href="/abonnement" className="btn-secondary">
+          Mon abonnement
+        </Link>
         <Link href="/reglages" className="btn-secondary">
           Réglages
         </Link>

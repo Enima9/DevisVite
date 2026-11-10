@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { requireCompany } from '@/lib/quotes-server';
+import { canDownloadQuotes } from '@/lib/billing';
 import { computeQuoteTotals, formatEuro, UNIT_LABELS, type LineInput, type VatRate } from '@/lib/money';
 import { deleteQuote, markQuoteStatus } from '@/app/actions/quotes';
 
@@ -24,6 +25,7 @@ export default async function DevisDetailPage({
   const { id } = await params;
   const { companyId } = await requireCompany();
   const supabase = await createClient();
+  const canDownload = await canDownloadQuotes(companyId);
 
   const { data: quote } = await supabase
     .from('quotes')
@@ -112,9 +114,21 @@ export default async function DevisDetailPage({
 
       {/* Actions principales */}
       <section className="space-y-3">
-        <a href={`/api/quotes/${quote.id}/pdf`} target="_blank" className="btn-primary">
-          📄 Voir / exporter le PDF
-        </a>
+        {canDownload ? (
+          <a href={`/api/quotes/${quote.id}/pdf`} target="_blank" className="btn-primary">
+            📄 Voir / exporter le PDF
+          </a>
+        ) : (
+          <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
+            <p className="font-semibold text-slate-900">🔒 Le téléchargement est réservé aux abonnés</p>
+            <p className="mt-1 text-sm text-slate-700">
+              Votre devis est prêt. Abonnez-vous pour le télécharger en PDF.
+            </p>
+            <Link href="/abonnement" className="btn-primary mt-3">
+              S’abonner pour télécharger
+            </Link>
+          </div>
+        )}
         {quote.status === 'draft' && (
           <p className="text-center text-sm text-slate-500">
             L&apos;envoi au client arrive en phase 4. Le PDF est déjà conforme.

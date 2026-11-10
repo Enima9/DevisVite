@@ -94,16 +94,20 @@ export default function CguPage() {
         </UL>
       </Section>
 
-      <Section id="tarifs" title="9. Tarifs, paiement et remboursement">
+      <Section id="tarifs" title="9. Abonnement, paiement et remboursement">
         <p>
-          À la date de mise à jour de ces conditions, <strong>le service est gratuit et aucun paiement n’est demandé</strong> :
-          aucun remboursement n’est donc applicable.
+          La création de compte, la préparation et l’enregistrement des devis sont accessibles sans paiement. Le{' '}
+          <strong>téléchargement des devis en PDF est réservé aux entreprises abonnées</strong>. Le prix, la périodicité, la
+          durée, les modalités de résiliation et de remboursement sont détaillés dans les{' '}
+          <Link href="/cgv" className={link}>
+            conditions générales de vente
+          </Link>
+          , présentées avant tout paiement.
         </p>
         <p>
-          Si une offre payante est un jour proposée, ses prix, sa durée, ses modalités de résiliation et de remboursement vous
-          seront présentés clairement avant tout engagement, et aucun paiement ne sera prélevé sans votre accord exprès. Le
-          service étant destiné à un usage professionnel, le droit de rétractation prévu pour les consommateurs ne s’applique
-          pas, sauf disposition légale contraire.
+          Le paiement est traité par Stripe : l’éditeur ne voit ni ne conserve votre numéro de carte. Aucun prélèvement n’est
+          effectué sans votre accord exprès sur la page de paiement. Le service étant destiné à un usage professionnel, le
+          droit de rétractation prévu pour les consommateurs ne s’applique pas, sauf disposition légale contraire.
         </p>
       </Section>
 

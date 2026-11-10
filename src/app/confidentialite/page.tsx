@@ -108,6 +108,7 @@ export default function ConfidentialitePage() {
           rows={[
             ['Supabase', 'Base de données, authentification, envoi de l’email de connexion', 'Données hébergées chez AWS, Irlande (UE)'],
             ['Vercel', 'Hébergement et exécution de l’application', 'Exécution en France (Paris) ; société établie aux États-Unis'],
+            ['Stripe', 'Paiement de l’abonnement, facturation (Stripe reçoit vos données de paiement ; l’éditeur n’en conserve que l’état de l’abonnement)', 'Union européenne / États-Unis (Stripe Payments Europe, Irlande)'],
             ['Anthropic', 'Génération des brouillons de devis par IA (description du chantier et catalogue)', 'États-Unis'],
           ]}
         />
@@ -119,7 +120,7 @@ export default function ConfidentialitePage() {
 
       <Section id="transferts" title="5. Transferts hors de l’Union européenne">
         <p>
-          Certains prestataires (Vercel, Anthropic, Supabase) sont des sociétés américaines. Ces transferts sont encadrés par
+          Certains prestataires (Vercel, Anthropic, Stripe, Supabase) sont des sociétés américaines. Ces transferts sont encadrés par
           les garanties prévues au chapitre V du RGPD : clauses contractuelles types de la Commission européenne et/ou
           certification au cadre de protection des données UE–États-Unis (Data Privacy Framework), selon le prestataire.
           Les données de votre compte sont stockées dans l’Union européenne.
@@ -135,6 +136,7 @@ export default function ConfidentialitePage() {
             ['Sauvegardes techniques de l’hébergeur', 'Écrasées selon leur cycle de rotation, au plus quelques semaines après la suppression.'],
             ['Journaux techniques (IP, erreurs)', 'Courte durée, fixée par nos hébergeurs (de l’ordre de quelques heures à quelques jours).'],
             ['Preuve d’acceptation des conditions', 'Durée du compte.'],
+            ['État de l’abonnement (statut, date de renouvellement)', 'Durée du compte. Les factures sont conservées par Stripe et l’éditeur 10 ans (obligation comptable).'],
           ]}
         />
         <p>

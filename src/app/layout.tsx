@@ -39,7 +39,6 @@ const jsonLd = {
   operatingSystem: 'Web',
   inLanguage: 'fr-FR',
   audience: { '@type': 'BusinessAudience', audienceType: 'Artisans et entreprises du bâtiment' },
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
 };
 
 export default function RootLayout({

@@ -40,6 +40,7 @@ export async function middleware(request: NextRequest) {
       pathname === '/login' ||
       pathname.startsWith('/auth') ||
       pathname.startsWith('/q') ||
+      pathname.startsWith('/api/stripe/webhook') ||
       PUBLIC_PAGES.includes(pathname);
 
     if (!user && !isPublicRoute) {
@@ -63,7 +64,7 @@ export async function middleware(request: NextRequest) {
 }
 
 /** Pages publiques (consultables sans compte) : informations légales. */
-const PUBLIC_PAGES = ['/mentions-legales', '/confidentialite', '/cgu', '/cookies'];
+const PUBLIC_PAGES = ['/mentions-legales', '/confidentialite', '/cgu', '/cookies', '/cgv'];
 
 export const config = {
   matcher: [
