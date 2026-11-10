@@ -57,6 +57,16 @@ export default function ConfidentialitePage() {
               'Exécution du contrat',
             ],
             [
+              'Réponse en ligne d’un client à un devis : consultation (date), acceptation (nom saisi, date, adresse IP, navigateur, empreinte du document) ou refus (motif, commentaire)',
+              'Permettre à votre client d’accepter ou refuser le devis en ligne et conserver la preuve de son accord. Le lien est personnel et expire au bout de 90 jours.',
+              'Exécution du contrat ; intérêt légitime (preuve de l’accord)',
+            ],
+            [
+              'Email envoyé à votre client pour lui transmettre le devis (adresse, date, statut d’envoi)',
+              'Transmettre le devis par email à la demande de l’entreprise.',
+              'Exécution du contrat',
+            ],
+            [
               'Catalogue de prestations et modèles de devis',
               'Pré-remplir vos devis avec vos tarifs.',
               'Exécution du contrat',
@@ -109,6 +119,7 @@ export default function ConfidentialitePage() {
             ['Supabase', 'Base de données, authentification, envoi de l’email de connexion', 'Données hébergées chez AWS, Irlande (UE)'],
             ['Vercel', 'Hébergement et exécution de l’application', 'Exécution en France (Paris) ; société établie aux États-Unis'],
             ['Stripe', 'Paiement de l’abonnement, facturation (Stripe reçoit vos données de paiement ; l’éditeur n’en conserve que l’état de l’abonnement)', 'Union européenne / États-Unis (Stripe Payments Europe, Irlande)'],
+            ['Resend', 'Envoi des emails de devis à vos clients (adresse du client, contenu de l’email)', 'États-Unis'],
             ['Anthropic', 'Génération des brouillons de devis par IA (description du chantier et catalogue)', 'États-Unis'],
           ]}
         />
@@ -120,7 +131,7 @@ export default function ConfidentialitePage() {
 
       <Section id="transferts" title="5. Transferts hors de l’Union européenne">
         <p>
-          Certains prestataires (Vercel, Anthropic, Stripe, Supabase) sont des sociétés américaines. Ces transferts sont encadrés par
+          Certains prestataires (Vercel, Anthropic, Stripe, Resend, Supabase) sont des sociétés américaines. Ces transferts sont encadrés par
           les garanties prévues au chapitre V du RGPD : clauses contractuelles types de la Commission européenne et/ou
           certification au cadre de protection des données UE–États-Unis (Data Privacy Framework), selon le prestataire.
           Les données de votre compte sont stockées dans l’Union européenne.

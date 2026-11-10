@@ -5,6 +5,9 @@ import { requireCompany } from '@/lib/quotes-server';
 import { canDownloadQuotes } from '@/lib/billing';
 import { computeQuoteTotals, formatEuro, UNIT_LABELS, type LineInput, type VatRate } from '@/lib/money';
 import { deleteQuote, markQuoteStatus } from '@/app/actions/quotes';
+import { sendQuote } from '@/app/actions/send-quote';
+import ShareQuote from '@/components/share-quote';
+import { SITE } from '@/lib/legal';
 
 export const metadata = { title: 'Détail du devis', robots: { index: false, follow: false } };
 
@@ -19,10 +22,13 @@ const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
 
 export default async function DevisDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string; envoye?: string; mail?: string }>;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
   const { companyId } = await requireCompany();
   const supabase = await createClient();
   const canDownload = await canDownloadQuotes(companyId);
@@ -129,10 +135,41 @@ export default async function DevisDetailPage({
             </Link>
           </div>
         )}
-        {quote.status === 'draft' && (
-          <p className="text-center text-sm text-slate-500">
-            L&apos;envoi au client arrive en phase 4. Le PDF est déjà conforme.
+        {sp.error && (
+          <p role="alert" className="rounded-xl border border-red-300 bg-red-50 p-3 text-red-800">
+            {sp.error}
           </p>
+        )}
+        {sp.envoye && (
+          <p role="status" className="rounded-xl border border-green-300 bg-green-50 p-3 text-green-900">
+            {sp.mail === 'sent'
+              ? `Devis envoyé par email à ${quote.client?.email}. Vous pouvez aussi partager le lien ci-dessous.`
+              : sp.mail === 'failed'
+                ? 'Le devis est prêt, mais l’email n’a pas pu partir. Partagez le lien ci-dessous.'
+                : 'Le devis est prêt à partager : copiez le lien ci-dessous.'}
+          </p>
+        )}
+        {['draft', 'sent', 'viewed', 'expired'].includes(quote.status) && (
+          <form action={sendQuote}>
+            <input type="hidden" name="id" value={quote.id} />
+            <button className="btn-primary">
+              {quote.status === 'draft' ? 'Envoyer au client' : 'Renvoyer au client'}
+            </button>
+            <p className="mt-2 text-center text-sm text-slate-600">
+              {quote.client?.email
+                ? `Le client reçoit un email à ${quote.client.email}, avec un lien pour accepter ou refuser en ligne.`
+                : 'Pas d’email pour ce client : vous obtiendrez un lien à lui envoyer par WhatsApp, SMS ou email.'}
+            </p>
+          </form>
+        )}
+        {quote.status !== 'draft' && (
+          <div className="card">
+            <ShareQuote
+              link={`${SITE.url}/q/${quote.public_token}`}
+              clientName={quote.client?.name ?? ''}
+              reference={quote.reference}
+            />
+          </div>
         )}
         <div className="grid grid-cols-2 gap-3">
           {quote.status !== 'accepted' && (
