@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LegalPage, Section, UL, Fill } from '@/components/legal';
 import { EDITOR, SITE } from '@/lib/legal';
-import { PLAN, planPriceLabel } from '@/lib/billing-config';
+import { PLAN, VAT_FRANCHISE, VAT_NOTICE, planPriceLabel } from '@/lib/billing-config';
 
 export const metadata: Metadata = {
   title: 'Conditions générales de vente',
@@ -45,8 +45,9 @@ export default function CgvPage() {
 
       <Section id="prix" title="3. Prix et paiement">
         <p>
-          Prix : <strong>{price ?? 'communiqué avant la souscription'}</strong>. Le prix exact, la TVA applicable et la
-          périodicité sont affichés avant la validation du paiement. Le paiement s’effectue par carte bancaire via Stripe,
+          Prix : <strong>{price ?? 'communiqué avant la souscription'}</strong>
+          {VAT_FRANCHISE ? <> ({VAT_NOTICE})</> : null}. Le prix exact et la périodicité sont affichés avant la
+          validation du paiement. Le paiement s’effectue par carte bancaire via Stripe,
           prestataire de paiement sécurisé ; l’éditeur n’a pas accès à votre numéro de carte.
         </p>
         <p>Une facture est émise pour chaque paiement et accessible depuis le portail de gestion de l’abonnement.</p>

@@ -25,6 +25,14 @@ export const PLAN = {
   ],
 } as const;
 
+/**
+ * Régime de TVA de l'éditeur. true = micro-entrepreneur en franchise en base : aucune TVA n'est
+ * facturée et la mention de l'article 293 B du CGI doit figurer. À passer à false si la TVA est activée
+ * (le prix reste alors TTC, TVA 20 %). À CONFIRMER avec le service des impôts ou un comptable.
+ */
+export const VAT_FRANCHISE = true;
+export const VAT_NOTICE = 'TVA non applicable, art. 293 B du CGI';
+
 /** L'abonnement n'est actif que si le prix est défini ET que Stripe est configuré. */
 export function isBillingEnabled(): boolean {
   // Les 3 clés sont exigées : sans webhook ni clé service, un client qui paie ne serait jamais activé.
@@ -39,6 +47,6 @@ export function isBillingEnabled(): boolean {
 export function planPriceLabel(): string | null {
   if (PLAN.priceCents === null) return null;
   const amount = (PLAN.priceCents / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
-  const tax = PLAN.taxBehavior === 'inclusive' ? 'TTC' : 'HT';
-  return `${amount} ${tax} / ${PLAN.interval === 'month' ? 'mois' : 'an'}`;
+  const tax = VAT_FRANCHISE ? '' : PLAN.taxBehavior === 'inclusive' ? ' TTC' : ' HT';
+  return `${amount}${tax} / ${PLAN.interval === 'month' ? 'mois' : 'an'}`;
 }

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { requireCompany } from '@/lib/quotes-server';
 import { getSubscription } from '@/lib/billing';
-import { PLAN, isBillingEnabled, planPriceLabel } from '@/lib/billing-config';
+import { PLAN, VAT_FRANCHISE, VAT_NOTICE, isBillingEnabled, planPriceLabel } from '@/lib/billing-config';
 import { isEntitled } from '@/lib/stripe';
 import { openPortal, startCheckout } from '@/app/actions/billing';
 
@@ -90,6 +90,7 @@ export default async function AbonnementPage({
                 {PLAN.name}
               </h2>
               <p className="mt-1 text-2xl font-bold">{price}</p>
+              {VAT_FRANCHISE && <p className="text-sm text-slate-600">{VAT_NOTICE}</p>}
               <ul className="mt-3 list-disc space-y-1 pl-5 text-slate-800">
                 {PLAN.features.map((f) => (
                   <li key={f}>{f}</li>
