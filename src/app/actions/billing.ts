@@ -18,11 +18,13 @@ async function ensureCustomer(companyId: string, email: string | null, name: str
     .maybeSingle();
   if (data?.stripe_customer_id) return data.stripe_customer_id;
 
-  const customer = await stripeRequest<{ id: string }>('POST', '/customers', {
-    name,
-    email: email ?? undefined,
-    metadata: { company_id: companyId },
-  });
+  // Clé d'idempotence : un double clic ne crée pas deux clients Stripe.
+  const customer = await stripeRequest<{ id: string }>(
+    'POST',
+    '/customers',
+    { name, email: email ?? undefined, metadata: { company_id: companyId } },
+    `devisvite-customer-${companyId}`
+  );
   // Le lien client ⇄ entreprise est enregistré par le webhook (écriture réservée au serveur).
   return customer.id;
 }

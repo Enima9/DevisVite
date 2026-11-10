@@ -105,7 +105,8 @@ export class StripeError extends Error {
 export async function stripeRequest<T = Record<string, unknown>>(
   method: 'GET' | 'POST' | 'DELETE',
   path: string,
-  params: Record<string, unknown> = {}
+  params: Record<string, unknown> = {},
+  idempotencyKey?: string
 ): Promise<T> {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new StripeError(0, 'STRIPE_SECRET_KEY manquante');
@@ -117,6 +118,7 @@ export async function stripeRequest<T = Record<string, unknown>>(
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/x-www-form-urlencoded',
+      ...(idempotencyKey && method === 'POST' ? { 'Idempotency-Key': idempotencyKey } : {}),
     },
     body: method === 'POST' ? body : undefined,
   }).catch((err: unknown) => {
