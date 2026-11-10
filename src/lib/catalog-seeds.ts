@@ -85,3 +85,22 @@ export const CATALOG_SEEDS: Record<TradeValue, SeedItem[]> = {
     { label: 'Main-d\u2019œuvre', unit: 'h', unit_price_ht: 50, vat_rate: 20, category: 'Main-d\u2019œuvre', is_labor: true },
   ],
 };
+
+/**
+ * Lignes prêtes à insérer en base pour un métier donné.
+ * Toutes les colonnes sont renseignées explicitement : un insert groupé dont les lignes
+ * n'ont pas les mêmes clés met les colonnes absentes à NULL, ce que la base refuse.
+ */
+export function seedRowsForTrade(trade: string, companyId: string) {
+  const seeds = CATALOG_SEEDS[trade as TradeValue] ?? [];
+  return seeds.map((item) => ({
+    company_id: companyId,
+    label: item.label,
+    unit: item.unit,
+    unit_price_ht: item.unit_price_ht,
+    vat_rate: item.vat_rate,
+    category: item.category,
+    is_labor: item.is_labor ?? false,
+    is_travel: item.is_travel ?? false,
+  }));
+}

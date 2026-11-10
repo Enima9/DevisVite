@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { seedRowsForTrade } from '@/lib/catalog-seeds';
 
 const UNITS = ['u', 'h', 'm2', 'ml', 'forfait'];
 const VAT = [0, 2.1, 5.5, 10, 20];
@@ -103,4 +104,36 @@ export async function deleteCatalogItem(formData: FormData) {
   if (!id) return;
   await supabase.from('catalog_items').delete().eq('id', id);
   revalidatePath('/catalogue');
+}
+
+/** Charge les prestations types du métier (uniquement si le catalogue est vide). */
+export async function seedCatalogFromTrade() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  const { data: company } = await supabase
+    .from('companies')
+    .select('id, trade')
+    .eq('owner_id', user.id)
+    .maybeSingle();
+  if (!company) redirect('/onboarding');
+
+  const { count } = await supabase
+    .from('catalog_items')
+    .select('id', { count: 'exact', head: true })
+    .eq('company_id', company.id);
+  if ((count ?? 0) > 0) redirect('/catalogue');
+
+  const rows = seedRowsForTrade(String(company.trade ?? 'autre'), company.id);
+  if (rows.length === 0) back('Aucune prestation type n\u2019existe pour ce métier. Ajoutez vos prestations ci-dessous.');
+  const { error } = await supabase.from('catalog_items').insert(rows);
+  if (error) {
+    console.error('[seedCatalogFromTrade]', error.message);
+    back('Le chargement des prestations a échoué. Réessayez.');
+  }
+  revalidatePath('/catalogue');
+  redirect('/catalogue?saved=1');
 }

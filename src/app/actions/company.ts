@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { companySchema } from '@/lib/validation';
-import { CATALOG_SEEDS, type TradeValue } from '@/lib/catalog-seeds';
+import { seedRowsForTrade } from '@/lib/catalog-seeds';
 
 export async function saveCompany(formData: FormData) {
   const supabase = await createClient();
@@ -48,11 +48,13 @@ export async function saveCompany(formData: FormData) {
   }
 
   // Pré-remplissage du catalogue selon le métier choisi
-  const seeds = CATALOG_SEEDS[values.trade as TradeValue] ?? [];
-  if (seeds.length > 0) {
-    await supabase.from('catalog_items').insert(
-      seeds.map((item) => ({ ...item, company_id: company.id }))
-    );
+  const rows = seedRowsForTrade(String(values.trade), company.id);
+  if (rows.length > 0) {
+    const { error: seedError } = await supabase.from('catalog_items').insert(rows);
+    if (seedError) {
+      // Non bloquant : l'artisan pourra charger les prestations depuis le catalogue.
+      console.error('[saveCompany] pré-remplissage du catalogue impossible :', seedError.message);
+    }
   }
 
   redirect('/dashboard?bienvenue=1');

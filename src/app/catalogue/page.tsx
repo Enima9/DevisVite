@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { requireCompany } from '@/lib/quotes-server';
-import { createCatalogItem, updateCatalogItem, deleteCatalogItem } from '@/app/actions/catalog';
+import { createCatalogItem, updateCatalogItem, deleteCatalogItem, seedCatalogFromTrade } from '@/app/actions/catalog';
 import { VAT_RATES, UNIT_LABELS, type Unit } from '@/lib/money';
 
 const UNITS = Object.entries(UNIT_LABELS) as [Unit, string][];
@@ -36,6 +36,18 @@ export default async function CataloguePage({
       )}
       {saved && (
         <p className="mb-4 rounded-xl bg-green-50 p-3 text-sm text-green-700">Modification enregistrée ✓</p>
+      )}
+
+      {(items ?? []).length === 0 && (
+        <section className="card mb-6 text-center">
+          <p className="font-bold">Votre catalogue est vide</p>
+          <p className="mt-1 mb-3 text-sm text-slate-600">
+            Chargez les prestations types de votre métier, vous pourrez ensuite modifier les prix.
+          </p>
+          <form action={seedCatalogFromTrade}>
+            <button type="submit" className="btn-primary">Charger les prestations de mon métier</button>
+          </form>
+        </section>
       )}
 
       {/* Ajout d'une prestation */}
