@@ -22,6 +22,36 @@ export function estimateCostCents(usage: AiUsage): number {
   return Math.ceil(usd * 100); // $ → € ≈ 1:1 (estimation volontairement majorée)
 }
 
+export type AiFailureKind =
+  | 'auth'
+  | 'credit'
+  | 'model'
+  | 'rate_limit'
+  | 'overloaded'
+  | 'network'
+  | 'other';
+
+/** Erreur d'appel à l'API Anthropic, avec une catégorie exploitable par la route. */
+export class AiApiError extends Error {
+  kind: AiFailureKind;
+  status: number;
+  constructor(kind: AiFailureKind, status: number, message: string) {
+    super(message);
+    this.name = 'AiApiError';
+    this.kind = kind;
+    this.status = status;
+  }
+}
+
+function classifyAiFailure(status: number, detail: string): AiFailureKind {
+  if (/credit balance/i.test(detail)) return 'credit';
+  if (status === 401 || status === 403) return 'auth';
+  if (status === 404) return 'model';
+  if (status === 429) return 'rate_limit';
+  if (status === 529 || status >= 500) return 'overloaded';
+  return 'other';
+}
+
 export async function callClaude(params: {
   system: string;
   user: string;
@@ -46,11 +76,21 @@ export async function callClaude(params: {
       system: params.system,
       messages: [{ role: 'user', content: params.user }],
     }),
+  }).catch((err: unknown) => {
+    throw new AiApiError(
+      'network',
+      0,
+      `Appel à l’API Anthropic impossible : ${err instanceof Error ? err.message : String(err)}`
+    );
   });
 
   if (!res.ok) {
     const detail = await res.text().catch(() => '');
-    throw new Error(`Erreur API Anthropic (${res.status}) : ${detail.slice(0, 300)}`);
+    throw new AiApiError(
+      classifyAiFailure(res.status, detail),
+      res.status,
+      `Erreur API Anthropic (${res.status}) : ${detail.slice(0, 300)}`
+    );
   }
 
   const data = (await res.json()) as {

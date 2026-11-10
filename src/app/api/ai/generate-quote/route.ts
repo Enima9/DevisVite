@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { QUOTE_SYSTEM_PROMPT, buildUserPrompt, extractJson } from '@/lib/ai/prompt';
 import { aiDraftSchema, mapDraftToEditorLines, type CatalogItemForAi } from '@/lib/ai/schema';
-import { callClaude, estimateCostCents, recordAiSpend } from '@/lib/ai/anthropic';
+import { AiApiError, callClaude, estimateCostCents, recordAiSpend } from '@/lib/ai/anthropic';
 import { checkAiRateLimit } from '@/lib/ratelimit';
 
 export const runtime = 'nodejs';
@@ -112,13 +112,61 @@ export async function POST(request: NextRequest) {
       clarifying_questions: draft.clarifying_questions,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Erreur inconnue';
-    // Ne pas exposer les détails techniques à l'artisan
-    const friendly = message.includes('ANTHROPIC_API_KEY')
-      ? 'L\u2019IA n\u2019est pas configurée sur ce serveur (clé API manquante).'
-      : message.includes('JSON')
-        ? 'L\u2019IA a renvoyé une réponse illisible. Réessayez en reformulant votre description.'
-        : 'La génération a échoué. Vérifiez votre connexion et réessayez.';
-    return NextResponse.json({ error: friendly }, { status: 502 });
+    // Le détail technique va dans les logs Vercel, jamais à l'écran de l'artisan.
+    console.error(
+      '[generate-quote] échec de la génération IA :',
+      err instanceof Error ? `${err.name} — ${err.message}` : err
+    );
+    const { message, status } = describeAiFailure(err);
+    return NextResponse.json({ error: message }, { status });
   }
+}
+
+/** Message lisible pour l'artisan + code HTTP adapté, selon la nature de l'échec. */
+function describeAiFailure(err: unknown): { message: string; status: number } {
+  if (err instanceof AiApiError) {
+    switch (err.kind) {
+      case 'auth':
+      case 'credit':
+      case 'model':
+        return {
+          message:
+            'Le service IA est momentanément indisponible. Vous pouvez créer votre devis manuellement en attendant.',
+          status: 503,
+        };
+      case 'rate_limit':
+      case 'overloaded':
+        return {
+          message: 'Le service IA est très sollicité en ce moment. Réessayez dans une minute.',
+          status: 503,
+        };
+      case 'network':
+        return {
+          message: 'Impossible de joindre le service IA. Réessayez dans un instant.',
+          status: 502,
+        };
+      default:
+        break;
+    }
+  }
+  const text = err instanceof Error ? err.message : '';
+  if (text.includes('ANTHROPIC_API_KEY')) {
+    return {
+      message: 'L\u2019IA n\u2019est pas configurée sur ce serveur (clé API manquante).',
+      status: 503,
+    };
+  }
+  if (err instanceof Error && err.name === 'ZodError') {
+    return {
+      message: 'L\u2019IA a renvoyé une réponse inattendue. Réessayez en reformulant votre description.',
+      status: 502,
+    };
+  }
+  if (text.includes('JSON')) {
+    return {
+      message: 'L\u2019IA a renvoyé une réponse illisible. Réessayez en reformulant votre description.',
+      status: 502,
+    };
+  }
+  return { message: 'La génération a échoué. Réessayez dans un instant.', status: 502 };
 }

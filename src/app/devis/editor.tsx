@@ -79,9 +79,25 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setAiError(data.error ?? 'La génération a échoué. Réessayez.');
+      let data: {
+        error?: string;
+        title?: string;
+        lines?: EditorLineAi[];
+        remarks?: string;
+        clarifying_questions?: string[];
+      } | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null; // réponse non JSON : erreur serveur, délai dépassé…
+      }
+      if (!res.ok || !data) {
+        setAiError(
+          data?.error ??
+            (res.status === 401
+              ? 'Votre session a expiré. Reconnectez-vous puis réessayez.'
+              : `Le serveur a rencontré une erreur (code ${res.status}). Réessayez dans un instant.`)
+        );
         return;
       }
       if (data.title && !title) setTitle(data.title);
@@ -96,7 +112,7 @@ export default function QuoteEditor({ catalogue, clients, defaultVatRate, validi
         );
       }
       if (data.remarks) setAiRemarks(data.remarks);
-      if (data.clarifying_questions?.length > 0) {
+      if (data.clarifying_questions && data.clarifying_questions.length > 0) {
         setAiQuestions(data.clarifying_questions);
       }
     } catch {
