@@ -61,7 +61,7 @@ export async function callClaude(params: {
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY manquante');
   }
-  const model = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5';
+  const model = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
 
   const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
