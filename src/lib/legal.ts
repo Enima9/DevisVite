@@ -9,17 +9,17 @@ export const TODO = '[À COMPLÉTER]';
 
 export const EDITOR = {
   /** Raison sociale (société) ou nom et prénom (entrepreneur individuel) */
-  name: TODO,
+  name: 'Mohamed-Amine Ketami',
   /** Forme juridique : Micro-entreprise, EI, SAS, SARL… */
-  legalForm: TODO,
+  legalForm: 'Entrepreneur individuel',
   /** Adresse postale complète du siège */
   address: TODO,
   /** SIRET (14 chiffres) */
-  siret: TODO,
+  siret: '498 695 121 00042',
   /** Email de contact — utilisé aussi pour les demandes RGPD */
   email: TODO,
   /** Directeur de la publication (souvent le représentant légal) */
-  publicationDirector: TODO,
+  publicationDirector: 'Mohamed-Amine Ketami',
 } as const;
 
 export const SITE = {
