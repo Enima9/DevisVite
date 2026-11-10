@@ -6,14 +6,14 @@ Le service est destiné aux professionnels ; le téléchargement des devis en PD
 
 ## Pages publiques
 
-- [Accueil / connexion](https://devisvite-phase3.vercel.app/login): présentation et accès au service
-- [Mentions légales](https://devisvite-phase3.vercel.app/mentions-legales): éditeur, directeur de la publication, hébergeur
-- [Politique de confidentialité](https://devisvite-phase3.vercel.app/confidentialite): données traitées, finalités, durées, sous-traitants, droits RGPD
-- [Conditions générales d'utilisation](https://devisvite-phase3.vercel.app/cgu): règles d'usage, IA, données, tarifs et remboursement
-- [Politique de cookies](https://devisvite-phase3.vercel.app/cookies): uniquement des cookies d'authentification strictement nécessaires, pas de traceurs
+- [Accueil / connexion](https://devisvite-3.vercel.app/login): présentation et accès au service
+- [Mentions légales](https://devisvite-3.vercel.app/mentions-legales): éditeur, directeur de la publication, hébergeur
+- [Politique de confidentialité](https://devisvite-3.vercel.app/confidentialite): données traitées, finalités, durées, sous-traitants, droits RGPD
+- [Conditions générales d'utilisation](https://devisvite-3.vercel.app/cgu): règles d'usage, IA, données, tarifs et remboursement
+- [Politique de cookies](https://devisvite-3.vercel.app/cookies): uniquement des cookies d'authentification strictement nécessaires, pas de traceurs
 
 ## Informations utiles
 
 - Langue : français (France). Droit applicable : droit français, RGPD.
 - Aucun traceur publicitaire ni outil de mesure d'audience.
-- Plan du site : https://devisvite-phase3.vercel.app/sitemap.xml
+- Plan du site : https://devisvite-3.vercel.app/sitemap.xml

@@ -24,7 +24,7 @@ export const EDITOR = {
 
 export const SITE = {
   name: 'DevisVite',
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://devisvite-phase3.vercel.app',
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://devisvite-3.vercel.app',
   description:
     'DevisVite aide les artisans à créer leurs devis en quelques minutes : dictez ou décrivez le chantier, vérifiez, exportez en PDF.',
 } as const;
