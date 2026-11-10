@@ -90,6 +90,7 @@ export default async function CataloguePage({
                 </select>
                 <input
                   name="unit_price_ht"
+                  aria-label="Prix HT en euros"
                   defaultValue={Number(item.unit_price_ht)}
                   inputMode="decimal"
                   className="input"
