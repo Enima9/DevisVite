@@ -5,6 +5,7 @@ import './globals.css';
 const serif = Source_Serif_4({ subsets: ['latin'], variable: '--font-serif', display: 'swap', weight: ['600', '700'] });
 const sans = Source_Sans_3({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
 import SiteFooter from '@/components/site-footer';
+import AppMenu from '@/components/app-menu';
 import { SITE } from '@/lib/legal';
 
 export const metadata: Metadata = {
@@ -57,6 +58,7 @@ export default function RootLayout({
         >
           Aller au contenu principal
         </a>
+        <AppMenu />
         <div className="flex-1">{children}</div>
         <SiteFooter />
         <script
