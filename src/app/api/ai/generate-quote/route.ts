@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { QUOTE_SYSTEM_PROMPT, buildUserPrompt, extractJson } from '@/lib/ai/prompt';
 import { aiDraftSchema, mapDraftToEditorLines, type CatalogItemForAi } from '@/lib/ai/schema';
-import { AiApiError, callClaude, estimateCostCents, recordAiSpend } from '@/lib/ai/anthropic';
+import { AiApiError, callClaude, currentMonthStart, estimateCostCents, recordAiSpend } from '@/lib/ai/anthropic';
 import { checkAiRateLimit } from '@/lib/ratelimit';
 
 export const runtime = 'nodejs';
@@ -41,9 +41,9 @@ export async function POST(request: NextRequest) {
   }
 
   // 3. Plafond de dépense IA mensuel (remise à zéro au changement de mois)
-  const today = new Date().toISOString().slice(0, 10);
+  const monthStart = currentMonthStart();
   const spendThisMonth =
-    company.ai_spend_month === today ? Number(company.ai_spend_cents_month) : 0;
+    company.ai_spend_month === monthStart ? Number(company.ai_spend_cents_month) : 0;
   if (spendThisMonth >= Number(company.ai_budget_cents_month)) {
     return NextResponse.json(
       {

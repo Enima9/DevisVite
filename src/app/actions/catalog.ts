@@ -2,6 +2,20 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+
+const UNITS = ['u', 'h', 'm2', 'ml', 'forfait'];
+const VAT = [0, 2.1, 5.5, 10, 20];
+
+function parsePrice(v: FormDataEntryValue | null): number | null {
+  const n = Number(String(v ?? '').trim().replace(/\s/g, '').replace(',', '.'));
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+function back(message: string): never {
+  redirect('/catalogue?error=' + encodeURIComponent(message));
+}
+
 
 export async function createCatalogItem(formData: FormData) {
   const supabase = await createClient();
@@ -18,19 +32,30 @@ export async function createCatalogItem(formData: FormData) {
   if (!company) return;
 
   const label = String(formData.get('label') ?? '').trim();
-  if (!label) return;
+  if (!label) back('Indiquez une désignation.');
+  const price = parsePrice(formData.get('unit_price_ht'));
+  if (price === null) back('Prix invalide : saisissez un nombre (ex. 45 ou 45,50).');
+  const unit = String(formData.get('unit') ?? 'u');
+  if (!UNITS.includes(unit)) back('Unité invalide.');
+  const vat = Number(formData.get('vat_rate') ?? company.default_vat_rate);
+  if (!VAT.includes(vat)) back('Taux de TVA invalide.');
 
-  await supabase.from('catalog_items').insert({
+  const { error } = await supabase.from('catalog_items').insert({
     company_id: company.id,
     label,
-    unit: String(formData.get('unit') ?? 'u'),
-    unit_price_ht: Number(String(formData.get('unit_price_ht') ?? '0').replace(',', '.')),
-    vat_rate: Number(formData.get('vat_rate') ?? company.default_vat_rate),
+    unit,
+    unit_price_ht: price,
+    vat_rate: vat,
     category: String(formData.get('category') ?? '').trim() || null,
     description: String(formData.get('description') ?? '').trim() || null,
   });
+  if (error) {
+    console.error('[createCatalogItem]', error.message);
+    back('La prestation n\u2019a pas pu être ajoutée. Réessayez.');
+  }
 
   revalidatePath('/catalogue');
+  redirect('/catalogue');
 }
 
 export async function updateCatalogItem(formData: FormData) {
@@ -43,19 +68,33 @@ export async function updateCatalogItem(formData: FormData) {
   const id = String(formData.get('id') ?? '');
   if (!id) return;
 
+  const label = String(formData.get('label') ?? '').trim();
+  if (!label) back('Indiquez une désignation.');
+  const price = parsePrice(formData.get('unit_price_ht'));
+  if (price === null) back('Prix invalide : saisissez un nombre (ex. 45 ou 45,50).');
+  const unit = String(formData.get('unit') ?? 'u');
+  if (!UNITS.includes(unit)) back('Unité invalide.');
+  const vat = Number(formData.get('vat_rate'));
+  if (!VAT.includes(vat)) back('Taux de TVA invalide.');
+
   // RLS : la mise à jour n'aboutit que si l'item appartient à l'artisan
-  await supabase
+  const { error } = await supabase
     .from('catalog_items')
     .update({
-      label: String(formData.get('label') ?? '').trim(),
-      unit: String(formData.get('unit') ?? 'u'),
-      unit_price_ht: Number(String(formData.get('unit_price_ht') ?? '0').replace(',', '.')),
-      vat_rate: Number(formData.get('vat_rate')),
+      label,
+      unit,
+      unit_price_ht: price,
+      vat_rate: vat,
       category: String(formData.get('category') ?? '').trim() || null,
     })
     .eq('id', id);
+  if (error) {
+    console.error('[updateCatalogItem]', error.message);
+    back('La modification n\u2019a pas pu être enregistrée. Réessayez.');
+  }
 
   revalidatePath('/catalogue');
+  redirect('/catalogue?saved=1');
 }
 
 export async function deleteCatalogItem(formData: FormData) {

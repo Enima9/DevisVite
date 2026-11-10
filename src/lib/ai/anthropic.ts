@@ -106,10 +106,15 @@ export async function callClaude(params: {
   return { text, usage: data.usage ?? { input_tokens: 0, output_tokens: 0 } };
 }
 
+/** Premier jour du mois courant (UTC), au format YYYY-MM-DD, comme la colonne ai_spend_month. */
+export function currentMonthStart(): string {
+  return `${new Date().toISOString().slice(0, 7)}-01`;
+}
+
 /** Incrémente la dépense IA du mois (remise à zéro au changement de mois). */
 export async function recordAiSpend(companyId: string, costCents: number): Promise<void> {
   const supabase = await createClient();
-  const monthStart = new Date().toISOString().slice(0, 10);
+  const monthStart = currentMonthStart();
 
   const { data: company } = await supabase
     .from('companies')

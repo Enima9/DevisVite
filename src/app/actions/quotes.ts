@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { nextQuoteReference } from '@/lib/quotes-server';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
@@ -15,6 +16,10 @@ const lineSchema = z.object({
   estimated: z.coerce.boolean().default(false),
   source: z.enum(['catalog', 'ai', 'manual']).default('manual'),
 });
+
+function fail(message: string): never {
+  redirect('/devis/nouveau?error=' + encodeURIComponent(message));
+}
 
 const payloadSchema = z
   .object({
@@ -61,12 +66,12 @@ export async function saveQuote(formData: FormData) {
   try {
     raw = JSON.parse(String(formData.get('payload') ?? '{}'));
   } catch {
-    redirect('/devis?error=' + encodeURIComponent('Données du devis invalides'));
+    fail('Données du devis invalides');
   }
 
   const parsed = payloadSchema.safeParse(raw);
   if (!parsed.success) {
-    redirect('/devis?error=' + encodeURIComponent(parsed.error.issues[0].message));
+    fail(parsed.error.issues[0].message);
   }
   const p = parsed.data;
 
@@ -85,7 +90,7 @@ export async function saveQuote(formData: FormData) {
       .select('id')
       .single();
     if (error || !client) {
-      redirect('/devis?error=' + encodeURIComponent('Création du client impossible : ' + error?.message));
+      fail('Création du client impossible. Vérifiez les informations saisies et réessayez.');
     }
     clientId = client.id;
   }
@@ -102,6 +107,7 @@ export async function saveQuote(formData: FormData) {
   };
 
   let quoteId = p.id;
+  let isNewQuote = false;
 
   if (quoteId) {
     // Mise à jour d'un brouillon existant (RLS protège l'accès)
@@ -111,35 +117,41 @@ export async function saveQuote(formData: FormData) {
       .eq('id', quoteId)
       .eq('status', 'draft');
     if (error) {
-      redirect('/devis?error=' + encodeURIComponent('Enregistrement impossible : ' + error.message));
+      fail('Enregistrement impossible. Réessayez dans un instant.');
     }
-    await supabase.from('quote_lines').delete().eq('quote_id', quoteId);
+    const { error: delError } = await supabase.from('quote_lines').delete().eq('quote_id', quoteId);
+    if (delError) fail('Enregistrement impossible. Réessayez dans un instant.');
   } else {
-    // Nouveau devis : référence DEV-<année>-000N
-    const { count } = await supabase
-      .from('quotes')
-      .select('id', { count: 'exact', head: true })
-      .eq('company_id', company.id);
-    const reference = `DEV-${new Date().getFullYear()}-${String((count ?? 0) + 1).padStart(4, '0')}`;
-    const { data: quote, error } = await supabase
-      .from('quotes')
-      .insert({ ...quoteValues, reference, status: 'draft' })
-      .select('id')
-      .single();
-    if (error || !quote) {
-      redirect('/devis?error=' + encodeURIComponent('Création du devis impossible : ' + error?.message));
+    // Nouveau devis : référence DEV-<année>-000N (on retente si deux envois se croisent)
+    let created: { id: string } | null = null;
+    for (let attempt = 0; attempt < 5 && !created; attempt++) {
+      const reference = await nextQuoteReference(company.id, attempt);
+      const { data: quote, error } = await supabase
+        .from('quotes')
+        .insert({ ...quoteValues, reference, status: 'draft' })
+        .select('id')
+        .single();
+      if (quote) {
+        created = quote;
+      } else if (error?.code !== '23505') {
+        console.error('[saveQuote] création du devis impossible :', error?.message);
+        fail('Création du devis impossible. Réessayez dans un instant.');
+      }
     }
-    quoteId = quote.id;
+    if (!created) fail('Création du devis impossible (numérotation). Réessayez.');
+    quoteId = created.id;
+    const usedAi = p.lines.some((l) => l.source === 'ai');
     await supabase.from('quote_events').insert({
       quote_id: quoteId,
       company_id: company.id,
       event_type: 'created',
-      metadata: { mode: 'ia' },
+      metadata: { mode: usedAi ? 'ia' : 'manuel' },
     });
+    isNewQuote = true;
   }
 
   // Lignes (le marquage "prix estimé" est conservé pour l'historique)
-  await supabase.from('quote_lines').insert(
+  const { error: linesError } = await supabase.from('quote_lines').insert(
     p.lines.map((l, i) => ({
       quote_id: quoteId,
       position: i,
@@ -153,6 +165,12 @@ export async function saveQuote(formData: FormData) {
       source: l.source,
     }))
   );
+  if (linesError) {
+    console.error('[saveQuote] insertion des lignes impossible :', linesError.message);
+    // Un devis sans lignes n'a aucun sens : on annule la création.
+    if (isNewQuote) await supabase.from('quotes').delete().eq('id', quoteId!);
+    fail('Les lignes du devis n\u2019ont pas pu être enregistrées. Réessayez.');
+  }
 
   // Modèle réutilisable
   if (p.save_as_template) {

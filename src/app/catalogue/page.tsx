@@ -5,7 +5,12 @@ import { VAT_RATES, UNIT_LABELS, type Unit } from '@/lib/money';
 
 const UNITS = Object.entries(UNIT_LABELS) as [Unit, string][];
 
-export default async function CataloguePage() {
+export default async function CataloguePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; saved?: string }>;
+}) {
+  const { error, saved } = await searchParams;
   const { companyId } = await requireCompany();
   const supabase = await createClient();
 
@@ -25,6 +30,13 @@ export default async function CataloguePage() {
       <p className="mt-1 mb-6 text-slate-600">
         Vos prestations et tarifs. Ils pré-remplissent vos devis : gardez-les à jour.
       </p>
+
+      {error && (
+        <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>
+      )}
+      {saved && (
+        <p className="mb-4 rounded-xl bg-green-50 p-3 text-sm text-green-700">Modification enregistrée ✓</p>
+      )}
 
       {/* Ajout d'une prestation */}
       <section className="card mb-6">

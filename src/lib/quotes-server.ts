@@ -84,13 +84,25 @@ export async function requireCompany(): Promise<{
   return { companyId: company.id, company: company as CompanyProfile };
 }
 
-/** Numéro de référence suivant : DEV-<année>-0001, 0002… */
-export async function nextQuoteReference(companyId: string): Promise<string> {
+/**
+ * Numéro de référence suivant : DEV-<année>-0001, 0002…
+ * Basé sur le plus grand numéro existant (et non sur le nombre de devis) :
+ * après la suppression d'un brouillon, un simple « nombre + 1 » créerait un doublon.
+ * `skip` permet de décaler le numéro en cas de collision (course entre deux envois).
+ */
+export async function nextQuoteReference(companyId: string, skip = 0): Promise<string> {
   const supabase = await createClient();
   const year = new Date().getFullYear();
-  const { count } = await supabase
+  const prefix = `DEV-${year}-`;
+  const { data } = await supabase
     .from('quotes')
-    .select('id', { count: 'exact', head: true })
-    .eq('company_id', companyId);
-  return `DEV-${year}-${String((count ?? 0) + 1).padStart(4, '0')}`;
+    .select('reference')
+    .eq('company_id', companyId)
+    .like('reference', `${prefix}%`);
+  let max = 0;
+  for (const row of data ?? []) {
+    const n = Number.parseInt(String(row.reference).slice(prefix.length), 10);
+    if (Number.isFinite(n) && n > max) max = n;
+  }
+  return `${prefix}${String(max + 1 + skip).padStart(4, '0')}`;
 }

@@ -2,7 +2,12 @@ import { createClient } from '@/lib/supabase/server';
 import { requireCompany } from '@/lib/quotes-server';
 import QuoteEditor from '../editor';
 
-export default async function NouveauDevisPage() {
+export default async function NouveauDevisPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
   const { companyId, company } = await requireCompany();
   const supabase = await createClient();
 
@@ -15,6 +20,9 @@ export default async function NouveauDevisPage() {
     <main className="mx-auto max-w-md px-5 py-8">
       <h1 className="text-2xl font-bold">Nouveau devis</h1>
       <p className="mt-1 mb-6 text-slate-600">Rien ne part sans votre validation : vous vérifiez tout avant l'envoi.</p>
+      {error && (
+        <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>
+      )}
       <QuoteEditor
         catalogue={(catalogue ?? []) as never}
         clients={(clients ?? []) as never}

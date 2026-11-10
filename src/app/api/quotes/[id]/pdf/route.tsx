@@ -47,6 +47,8 @@ export async function GET(
     discount: Number(l.discount),
   }));
 
+  if (!company) return NextResponse.json({ error: 'Entreprise introuvable' }, { status: 404 });
+
   const data: DevisPdfData = {
     company,
     quote: {
@@ -58,8 +60,8 @@ export async function GET(
       global_discount: Number(quote.global_discount ?? 0),
     },
     client: {
-      name: quote.client.name,
-      site_address: quote.client.site_address,
+      name: quote.client?.name ?? 'Client',
+      site_address: quote.client?.site_address ?? null,
     },
     lines: pdfLines,
     intro_text: quote.intro_text,

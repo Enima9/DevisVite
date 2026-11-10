@@ -12,13 +12,18 @@ const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
   expired: { label: 'Expiré', cls: 'bg-slate-100 text-slate-500' },
 };
 
-export default async function DevisListPage() {
+export default async function DevisListPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
   const { companyId } = await requireCompany();
   const supabase = await createClient();
 
   const { data: quotes } = await supabase
     .from('quotes')
-    .select('*, client:clients(name)')
+    .select('*, client:clients(name), lines:quote_lines(*)')
     .eq('company_id', companyId)
     .order('created_at', { ascending: false });
 
@@ -30,6 +35,10 @@ export default async function DevisListPage() {
           + Nouveau
         </Link>
       </div>
+
+      {error && (
+        <p className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>
+      )}
 
       {(quotes ?? []).length === 0 ? (
         <div className="card text-center">
@@ -44,6 +53,18 @@ export default async function DevisListPage() {
         <ul className="space-y-3 pb-8">
           {(quotes ?? []).map((q) => {
             const s = STATUS_STYLES[q.status] ?? STATUS_STYLES.draft;
+            const totals = computeQuoteTotals(
+              ((q.lines ?? []) as Record<string, unknown>[]).map((l) => ({
+                label: String(l.label),
+                unit: l.unit as LineInput['unit'],
+                quantity: Number(l.quantity),
+                unit_price_ht: Number(l.unit_price_ht),
+                vat_rate: Number(l.vat_rate) as VatRate,
+                discount: Number(l.discount),
+              })),
+              Number(q.global_discount),
+              Number(q.deposit_amount)
+            );
             return (
               <li key={q.id}>
                 <Link href={`/devis/${q.id}`} className="card block">
@@ -62,7 +83,7 @@ export default async function DevisListPage() {
                       <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${s.cls}`}>
                         {s.label}
                       </span>
-                      <p className="mt-1 font-bold">{Number(q.total_ttc ?? 0).toLocaleString('fr-FR')} € TTC</p>
+                      <p className="mt-1 font-bold">{formatEuro(totals.total_ttc_cents)} TTC</p>
                     </div>
                   </div>
                 </Link>

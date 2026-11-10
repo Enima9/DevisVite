@@ -64,6 +64,8 @@ export default async function DevisDetailPage({
     expired: 'Expiré',
     signed: 'Signé électroniquement',
     manual_status: 'Statut mis à jour manuellement',
+    ai_generated: 'Brouillon généré par l\u2019IA',
+    ai_retried: 'Nouvelle génération IA',
   };
 
   return (
