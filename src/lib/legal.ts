@@ -13,7 +13,7 @@ export const EDITOR = {
   /** Forme juridique : Micro-entreprise, EI, SAS, SARL… */
   legalForm: 'Entrepreneur individuel',
   /** Adresse postale complète du siège */
-  address: TODO,
+  address: '41 Traverse du Colonel, 13014 Marseille',
   /** SIRET (14 chiffres) */
   siret: '498 695 121 00042',
   /** Email de contact — utilisé aussi pour les demandes RGPD */
