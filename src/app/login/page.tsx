@@ -57,7 +57,7 @@ export default function LoginPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/icon.svg"
-          alt="Logo DevisVite : une coche blanche sur fond bleu"
+          alt="Logo DevisVite : une enveloppe blanche qui s’envole sur fond bleu"
           width={48}
           height={48}
           className="mb-3 h-12 w-12"
