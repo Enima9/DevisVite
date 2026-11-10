@@ -48,6 +48,7 @@ export async function startCheckout() {
       success_url: `${SITE.url}/abonnement?paiement=ok`,
       cancel_url: `${SITE.url}/abonnement?paiement=annule`,
       locale: 'fr',
+      allow_promotion_codes: true, // codes promo créés dans Stripe (Coupons → Codes promotionnels)
       billing_address_collection: 'required',
       tax_id_collection: { enabled: true },
       customer_update: { name: 'auto', address: 'auto' },
