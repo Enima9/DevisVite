@@ -1,0 +1,18 @@
+{
+  "name": "DevisVite",
+  "short_name": "DevisVite",
+  "description": "Devis rapides pour artisans : dictez, vérifiez, envoyez. On relance à votre place.",
+  "lang": "fr",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1F4FBF",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

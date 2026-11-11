@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-labelledby="t"><title id="t">Logo DevisVite : une enveloppe blanche qui s’envole sur fond bleu</title>
+  <rect width="192" height="192" rx="32" fill="#1F4FBF"/>
+  <g stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none" opacity=".75">
+    <path d="M26 92h22"/><path d="M36 110h18"/><path d="M22 128h26" opacity=".6"/>
+  </g>
+  <g transform="rotate(-12 112 98)">
+    <rect x="64" y="70" width="96" height="62" rx="6" fill="#fff"/>
+    <path d="M68 76l44 32 44-32" stroke="#1F4FBF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+</svg>
