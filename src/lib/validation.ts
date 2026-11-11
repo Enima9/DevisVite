@@ -19,6 +19,15 @@ export const companySchema = z.object({
   insurance_policy_number: z.string().optional(),
   default_vat_rate: z.union([z.literal(0), z.literal(5.5), z.literal(10), z.literal(20)]),
   vat_exemption: z.boolean().default(false),
+  vat_number: z
+    .string()
+    .optional()
+    .refine(
+      (v) => !v || /^[A-Za-z]{2}[A-Za-z0-9]{2,13}$/.test(v.replace(/[\s.]/g, '')),
+      'Numéro de TVA invalide (exemple : FR12345678901)'
+    )
+    .transform((v) => (v ? v.replace(/[\s.]/g, '').toUpperCase() : undefined)),
+  vat_on_debits: z.boolean().default(false),
   payment_terms: z.string().default('Paiement à 30 jours après réception de facture.'),
   quote_validity_days: z.coerce.number().int().min(1).max(365).default(30),
   trade: z.string().min(1, 'Choisissez votre métier'),

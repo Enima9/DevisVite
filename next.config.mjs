@@ -8,6 +8,8 @@ const nextConfig = {
   // la route PDF plante en production avec « Cannot find module …/standard-fonts/Helvetica.cjs ».
   outputFileTracingIncludes: {
     '/api/quotes/[id]/pdf': ['./node_modules/pdfkit/js/**/*'],
+    // Factures : mêmes polices standard de pdfkit + polices DejaVu intégrées au PDF (PDF/A-3).
+    '/api/invoices/[id]/pdf': ['./node_modules/pdfkit/js/**/*', './src/assets/fonts/**/*'],
   },
 };
 

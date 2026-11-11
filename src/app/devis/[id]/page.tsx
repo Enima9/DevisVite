@@ -52,6 +52,13 @@ export default async function DevisDetailPage({
     .eq('quote_id', id)
     .order('created_at', { ascending: false });
 
+  const { data: invoice } = await supabase
+    .from('invoices')
+    .select('id, reference')
+    .eq('quote_id', id)
+    .eq('kind', 'invoice')
+    .maybeSingle();
+
   const pdfLines: LineInput[] = (lines ?? []).map((l) => ({
     label: l.label,
     unit: l.unit,
@@ -169,6 +176,24 @@ export default async function DevisDetailPage({
               clientName={quote.client?.name ?? ''}
               reference={quote.reference}
             />
+          </div>
+        )}
+        {quote.status === 'accepted' && (
+          <div className="card">
+            {invoice ? (
+              <>
+                <p className="font-semibold">Facture {invoice.reference} émise</p>
+                <Link href={`/factures/${invoice.id}`} className="btn-primary mt-3">Voir la facture</Link>
+              </>
+            ) : (
+              <>
+                <p className="font-semibold">Devis accepté : place à la facture</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  Créez la facture électronique à partir de ce devis (numérotée automatiquement).
+                </p>
+                <Link href={`/devis/${quote.id}/facturer`} className="btn-primary mt-3">Créer la facture</Link>
+              </>
+            )}
           </div>
         )}
         <div className="grid grid-cols-2 gap-3">

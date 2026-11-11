@@ -57,6 +57,11 @@ export default function ConfidentialitePage() {
               'Exécution du contrat',
             ],
             [
+              'Factures et avoirs : numéro, dates, coordonnées et SIREN des parties, lignes, montants, TVA, état de paiement',
+              'Émettre vos factures conformes (format Factur-X) à partir d’un devis accepté.',
+              'Exécution du contrat ; obligation légale pour les mentions des factures',
+            ],
+            [
               'Réponse en ligne d’un client à un devis : consultation (date), acceptation (nom saisi, date, adresse IP, navigateur, empreinte du document) ou refus (motif, commentaire)',
               'Permettre à votre client d’accepter ou refuser le devis en ligne et conserver la preuve de son accord. Le lien est personnel et expire au bout de 90 jours.',
               'Exécution du contrat ; intérêt légitime (preuve de l’accord)',
@@ -143,6 +148,7 @@ export default function ConfidentialitePage() {
           caption="Durées de conservation"
           head={['Données', 'Durée']}
           rows={[
+            ['Factures et avoirs émis (y compris leur fichier Factur-X)', 'Tant que votre compte existe, au même titre que vos devis. La loi impose à l’entreprise de conserver ses factures 10 ans : téléchargez-les avant de supprimer votre compte, car leur suppression est définitive et nous n’en gardons pas de copie.'],
             ['Compte, profil, clients, devis, catalogue, modèles', 'Tant que votre compte existe. Elles sont effacées immédiatement lorsque vous supprimez votre compte (Réglages → « Mes données »).'],
             ['Sauvegardes techniques de l’hébergeur', 'Écrasées selon leur cycle de rotation, au plus quelques semaines après la suppression.'],
             ['Journaux techniques (IP, erreurs)', 'Courte durée, fixée par nos hébergeurs (de l’ordre de quelques heures à quelques jours).'],

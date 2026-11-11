@@ -8,13 +8,14 @@ const ITEMS = [
   { href: '/dashboard', label: 'Tableau de bord' },
   { href: '/devis/nouveau', label: 'Nouveau devis' },
   { href: '/devis', label: 'Mes devis' },
+  { href: '/factures', label: 'Mes factures' },
   { href: '/catalogue', label: 'Mon catalogue' },
   { href: '/abonnement', label: 'Mon abonnement' },
   { href: '/reglages', label: 'Mon compte' },
 ];
 
 /** Pages de l'espace connecté : le menu n'apparaît que là (pas sur la connexion ni les pages légales). */
-const PRIVATE = ['/dashboard', '/devis', '/catalogue', '/abonnement', '/reglages'];
+const PRIVATE = ['/dashboard', '/devis', '/factures', '/catalogue', '/abonnement', '/reglages'];
 
 function isActive(pathname: string, href: string) {
   if (href === '/devis') return pathname === '/devis' || (pathname.startsWith('/devis/') && pathname !== '/devis/nouveau');

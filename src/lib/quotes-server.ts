@@ -16,6 +16,8 @@ export interface CompanyProfile {
   insurance_policy_number: string | null;
   default_vat_rate: number;
   vat_exemption: boolean;
+  vat_number: string | null;
+  vat_on_debits: boolean;
   payment_terms: string | null;
   quote_validity_days: number;
   trade: string | null;

@@ -106,6 +106,26 @@ export default function OnboardingForm(props: Props) {
           </span>
         </label>
 
+        {!vatExemption && (
+          <>
+            <div>
+              <label htmlFor="vat_number" className="label">N° de TVA intracommunautaire</label>
+              <input
+                id="vat_number"
+                name="vat_number"
+                className="input"
+                placeholder="FR12345678901"
+                defaultValue={init?.vat_number ?? ''}
+              />
+              <p className="mt-1 text-sm text-slate-600">Obligatoire sur vos factures si vous facturez la TVA.</p>
+            </div>
+            <label className="flex items-start gap-3 text-sm">
+              <input type="checkbox" name="vat_on_debits" className="mt-1 h-5 w-5" defaultChecked={init?.vat_on_debits ?? false} />
+              <span>J’ai opté pour le paiement de la TVA d’après les débits (mention à afficher sur les factures).</span>
+            </label>
+          </>
+        )}
+
         <div>
           <label htmlFor="payment_terms" className="label">Conditions de paiement</label>
           <textarea
