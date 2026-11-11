@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from 'next';
-import { Source_Serif_4, Source_Sans_3 } from 'next/font/google';
+import { Newsreader, Instrument_Sans } from 'next/font/google';
 import './globals.css';
 
-const serif = Source_Serif_4({ subsets: ['latin'], variable: '--font-serif', display: 'swap', weight: ['600', '700'] });
-const sans = Source_Sans_3({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
+const serif = Newsreader({ subsets: ['latin'], variable: '--font-serif', display: 'swap', weight: ['500', '600'] });
+const sans = Instrument_Sans({ subsets: ['latin'], variable: '--font-sans', display: 'swap' });
 import SiteFooter from '@/components/site-footer';
 import AppMenu from '@/components/app-menu';
 import { SITE } from '@/lib/legal';
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#1F4FBF',
+  themeColor: '#0E1A2F',
 };
 
 // Données structurées (schema.org) : permettent aux moteurs et aux agents IA de comprendre le site.

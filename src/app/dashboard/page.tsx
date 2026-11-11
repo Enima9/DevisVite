@@ -8,14 +8,17 @@ export default async function DashboardPage() {
 
   return (
     <main id="contenu" className="mx-auto max-w-md px-5 py-8">
-      <h1 className="text-3xl font-bold">Bonjour {company.name}</h1>
-      <p className="mt-1 mb-6 text-slate-600">Que voulez-vous faire ?</p>
+      <h1 className="text-4xl">Bonjour {company.name}</h1>
+      <p className="mb-7 mt-2 border-b border-brass/40 pb-5 text-slate-600">Que voulez-vous faire ?</p>
       <div className="space-y-3">
         <Link href="/devis/nouveau" className="btn-primary">
-          ➕ Créer un devis
+          Créer un devis
         </Link>
         <Link href="/devis" className="btn-secondary">
           Mes devis
+        </Link>
+        <Link href="/factures" className="btn-secondary">
+          Mes factures
         </Link>
         <Link href="/catalogue" className="btn-secondary">
           Mon catalogue
@@ -28,7 +31,7 @@ export default async function DashboardPage() {
         </Link>
       </div>
       <form action="/auth/signout" method="post" className="mt-8 text-center">
-        <button type="submit" className="text-sm font-semibold text-slate-500 underline">
+        <button type="submit" className="text-sm font-semibold text-slate-500 underline underline-offset-4 hover:text-ink">
           Se déconnecter
         </button>
       </form>
