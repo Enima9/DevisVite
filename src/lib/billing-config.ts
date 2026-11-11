@@ -9,7 +9,7 @@
 export const PLAN = {
   name: 'DevisVite — abonnement',
   /** Prix en centimes d'euro (ex. 1900 = 19,00 €). null = abonnement désactivé. */
-  priceCents: 9999 as number | null,
+  priceCents: 4999 as number | null,
   /** 'month' (mensuel) ou 'year' (annuel) */
   interval: 'month' as 'month' | 'year',
   /** 'inclusive' : le prix est TTC · 'exclusive' : le prix est HT (la TVA s'ajoute) */
