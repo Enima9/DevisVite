@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { renderToBuffer } from '@react-pdf/renderer';
 import { writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { DevisPdf } from '../src/lib/pdf/devis-pdf';
 import type { CompanyProfile } from '../src/lib/quotes-server';
 import type { LineInput } from '../src/lib/money';
@@ -64,7 +66,8 @@ describe('PDF devis', () => {
     expect(buffer.subarray(0, 5).toString()).toBe('%PDF-');
     expect(buffer.length).toBeGreaterThan(2000);
 
-    writeFileSync('/home/user/devisvite/sample-devis.pdf', buffer);
+    // Exemple à ouvrir à la main : écrit dans le dossier temporaire du système (portable).
+    writeFileSync(join(tmpdir(), 'devisvite-sample-devis.pdf'), buffer);
   });
 
   it('génère un PDF micro-entrepreneur avec mention art. 293 B', async () => {

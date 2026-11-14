@@ -4,6 +4,10 @@ import { subscriptionToFields, verifyStripeSignature } from '@/lib/stripe';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+
+/** Une réservation non traitée plus vieille que ça vient d'une exécution interrompue (> maxDuration). */
+const STALE_CLAIM_MS = 5 * 60 * 1000;
 
 interface StripeEvent {
   id: string;
@@ -33,12 +37,33 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient();
 
-  // Idempotence : Stripe peut renvoyer le même événement.
+  // Idempotence : Stripe peut renvoyer le même événement. La ligne est « réservée » à la réception
+  // et marquée traitée (processed_at) seulement après succès.
   const { error: dupe } = await admin.from('stripe_events').insert({ id: event.id, type: event.type });
   if (dupe) {
-    if (dupe.code === '23505') return NextResponse.json({ received: true, duplicate: true });
-    console.error('[stripe webhook] stripe_events', dupe.message);
-    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 });
+    if (dupe.code !== '23505') {
+      console.error('[stripe webhook] stripe_events', dupe.message);
+      return NextResponse.json({ error: 'Erreur interne' }, { status: 500 });
+    }
+    // Déjà reçu. Réservation abandonnée (exécution coupée par un timeout) : on la reprend.
+    const staleBefore = new Date(Date.now() - STALE_CLAIM_MS).toISOString();
+    const { data: reclaimed, error: reclaimError } = await admin
+      .from('stripe_events')
+      .update({ received_at: new Date().toISOString() })
+      .eq('id', event.id)
+      .is('processed_at', null)
+      .lt('received_at', staleBefore)
+      .select('id');
+    if (reclaimError) {
+      console.error('[stripe webhook] stripe_events reclaim', reclaimError.message);
+      return NextResponse.json({ error: 'Erreur interne' }, { status: 500 });
+    }
+    if (!reclaimed || reclaimed.length === 0) {
+      const { data: seen } = await admin.from('stripe_events').select('processed_at').eq('id', event.id).maybeSingle();
+      if (seen?.processed_at) return NextResponse.json({ received: true, duplicate: true });
+      // En cours de traitement par une autre exécution : Stripe réessaiera plus tard.
+      return NextResponse.json({ error: 'Traitement en cours' }, { status: 409 });
+    }
   }
 
   try {
@@ -96,6 +121,16 @@ export async function POST(request: NextRequest) {
     console.error('[stripe webhook]', event.type, e);
     // On libère l'identifiant pour que Stripe puisse réessayer.
     await admin.from('stripe_events').delete().eq('id', event.id);
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 });
+  }
+
+  const { error: doneError } = await admin
+    .from('stripe_events')
+    .update({ processed_at: new Date().toISOString() })
+    .eq('id', event.id);
+  if (doneError) {
+    // Les écritures sont idempotentes : un nouvel envoi de Stripe sera simplement réappliqué.
+    console.error('[stripe webhook] processed_at', doneError.message);
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 });
   }
 

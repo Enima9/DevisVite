@@ -38,9 +38,9 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
     const isPublicRoute =
       pathname === '/login' ||
-      pathname.startsWith('/auth') ||
-      pathname.startsWith('/q') ||
-      pathname.startsWith('/api/stripe/webhook') ||
+      pathname.startsWith('/auth/') ||
+      pathname.startsWith('/q/') ||
+      pathname === '/api/stripe/webhook' ||
       PUBLIC_PAGES.includes(pathname);
 
     if (!user && !isPublicRoute) {

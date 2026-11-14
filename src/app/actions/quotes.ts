@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 const lineSchema = z.object({
-  label: z.string().trim().min(1, 'Chaque ligne doit avoir une désignation.'),
+  label: z.string().trim().min(1, 'Chaque ligne doit avoir une désignation.').max(500, 'Désignation trop longue (500 caractères maximum).'),
   unit: z.enum(['u', 'h', 'm2', 'ml', 'forfait']),
   quantity: z.coerce.number().min(0, 'La quantité ne peut pas être négative.'),
   unit_price_ht: z.coerce.number().min(0, 'Le prix ne peut pas être négatif.'),
@@ -32,21 +32,21 @@ const payloadSchema = z
     client_id: z.string().uuid().optional(),
     new_client: z
       .object({
-        name: z.string().trim().min(1, 'Indiquez le nom du client.'),
-        email: z.string().email('Adresse email du client invalide.').optional().or(z.literal('')),
-        phone: z.string().optional(),
-        site_address: z.string().optional(),
+        name: z.string().trim().min(1, 'Indiquez le nom du client.').max(120, 'Nom du client trop long (120 caractères maximum).'),
+        email: z.string().max(254).email('Adresse email du client invalide.').optional().or(z.literal('')),
+        phone: z.string().max(30, 'Numéro de téléphone trop long.').optional(),
+        site_address: z.string().max(500, 'Adresse du chantier trop longue (500 caractères maximum).').optional(),
       })
       .optional(),
-    title: z.string().optional(),
-    execution_delay: z.string().optional(),
-    valid_until: z.string().min(8, 'Indiquez la date de validité du devis.'),
+    title: z.string().max(200, 'Titre trop long (200 caractères maximum).').optional(),
+    execution_delay: z.string().max(200).optional(),
+    valid_until: z.string().min(8, 'Indiquez la date de validité du devis.').max(10),
     global_discount: z.coerce.number().min(0).default(0),
     deposit_amount: z.coerce.number().min(0).default(0),
-    intro_text: z.string().optional(),
-    lines: z.array(lineSchema).min(1, 'Ajoutez au moins une ligne au devis.'),
+    intro_text: z.string().max(5000, 'Texte d’introduction trop long (5000 caractères maximum).').optional(),
+    lines: z.array(lineSchema).min(1, 'Ajoutez au moins une ligne au devis.').max(200, 'Trop de lignes (200 maximum).'),
     save_as_template: z.boolean().default(false),
-    template_name: z.string().optional(),
+    template_name: z.string().max(120).optional(),
   })
   .refine((p) => p.client_id || p.new_client, {
     message: 'Choisissez un client ou créez-en un.',
