@@ -19,7 +19,7 @@ export const PLAN = {
   currency: 'eur',
   features: [
     'Téléchargement des devis en PDF, sans limite',
-    'Devis générés par l’IA (dans la limite d’usage raisonnable)',
+    'Devis générés par l’IA',
     'Catalogue, modèles et suivi des devis',
     'Résiliation à tout moment, en un clic',
   ],
