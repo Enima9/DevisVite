@@ -200,14 +200,20 @@ describe('limitation de débit IA', () => {
 });
 
 describe('plafond de dépense IA', () => {
-  it('estime le coût : 1000 tokens in + 500 out ≈ 1 € (100 cents, arrondi sup)', () => {
-    const cents = estimateCostCents({ input_tokens: 1000, output_tokens: 500 });
-    // (1000×3 + 500×15)/1M = 0.0105 $ → 1.05 ¢ → ceil = 2 cents
-    expect(cents).toBe(2);
+  it('estime le coût selon le modèle, arrondi au centime supérieur', () => {
+    // Sonnet 5.5 : (3000×2 + 1500×10)/1M = 0,021 $ → 2,1 ¢ → 3 centimes
+    expect(estimateCostCents({ input_tokens: 3000, output_tokens: 1500 }, 'claude-sonnet-5-5')).toBe(3);
+    // Haiku 5.5 : (3000×0,1 + 1500×0,5)/1M = 0,00105 $ → 0,105 ¢ → 1 centime
+    expect(estimateCostCents({ input_tokens: 3000, output_tokens: 1500 }, 'claude-haiku-5-5')).toBe(1);
+  });
+
+  it('un modèle inconnu est estimé au prix haut (plafond prudent)', () => {
+    // (3000×5 + 1500×25)/1M = 0,0525 $ → 5,25 ¢ → 6 centimes
+    expect(estimateCostCents({ input_tokens: 3000, output_tokens: 1500 }, 'modele-inconnu')).toBe(6);
   });
 
   it('un appel typique de devis reste bien sous 10 cents', () => {
-    const cents = estimateCostCents({ input_tokens: 3000, output_tokens: 800 });
+    const cents = estimateCostCents({ input_tokens: 3000, output_tokens: 800 }, 'claude-sonnet-5-5');
     expect(cents).toBeLessThan(10);
   });
 });

@@ -6,9 +6,12 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/login', '/mentions-legales', '/confidentialite', '/cgu', '/cookies'],
+        allow: ['/', '/login', '/mentions-legales', '/confidentialite', '/cgu', '/cgv', '/cookies'],
         // Espace connecté : données privées, rien à indexer
-        disallow: ['/dashboard', '/devis', '/catalogue', '/reglages', '/onboarding', '/api/', '/auth/', '/q/'],
+        disallow: [
+          '/dashboard', '/devis', '/factures', '/catalogue', '/abonnement', '/reglages', '/onboarding',
+          '/api/', '/auth/', '/q/',
+        ],
       },
     ],
     sitemap: `${SITE.url}/sitemap.xml`,

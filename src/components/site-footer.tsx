@@ -1,10 +1,18 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { LEGAL_PAGES, SITE } from '@/lib/legal';
 
+/** Pages en pleine largeur (max-w-5xl) : le pied de page s'aligne sur leur contenu. */
+const WIDE_PAGES = ['/', '/login'];
+
 export default function SiteFooter() {
+  const wide = WIDE_PAGES.includes(usePathname());
   return (
-    <footer className="on-dark border-t border-brass/60 bg-ink px-5 pb-24 pt-7 text-sm text-slate-300">
-      <div className="mx-auto max-w-2xl">
+    <footer className="on-dark border-t border-brass/60 bg-ink pb-24 pt-7 text-sm text-slate-300">
+      {/* Même structure que les pages (mx-auto max-w-… px-5) : les bords gauches s'alignent. */}
+      <div className={`mx-auto px-5 ${wide ? 'max-w-5xl' : 'max-w-2xl'}`}>
         <p className="font-serif text-xl font-semibold text-white">
           Devis<span className="text-brass-light">Vite</span>
         </p>

@@ -7,6 +7,7 @@ const sans = Instrument_Sans({ subsets: ['latin'], variable: '--font-sans', disp
 import SiteFooter from '@/components/site-footer';
 import AppMenu from '@/components/app-menu';
 import { SITE } from '@/lib/legal';
+import { PLAN } from '@/lib/billing-config';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -44,6 +45,14 @@ const jsonLd = {
   operatingSystem: 'Web',
   inLanguage: 'fr-FR',
   audience: { '@type': 'BusinessAudience', audienceType: 'Artisans et entreprises du bâtiment' },
+  ...(PLAN.priceCents !== null && {
+    offers: {
+      '@type': 'Offer',
+      price: (PLAN.priceCents / 100).toFixed(2),
+      priceCurrency: 'EUR',
+      description: 'Abonnement mensuel. Création des devis gratuite.',
+    },
+  }),
 };
 
 export default function RootLayout({

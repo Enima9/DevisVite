@@ -15,11 +15,36 @@ export interface AiCallResult {
   usage: AiUsage;
 }
 
-/** Coût estimé en CENTIMES d'euro : input 3 $/MTok, output 15 $/MTok (Claude Sonnet). */
-export function estimateCostCents(usage: AiUsage): number {
-  const usd =
-    (usage.input_tokens * 3 + usage.output_tokens * 15) / 1_000_000;
-  return Math.ceil(usd * 100); // $ → € ≈ 1:1 (estimation volontairement majorée)
+const DEFAULT_MODEL = 'claude-sonnet-5-5';
+
+export function aiModel(): string {
+  return process.env.ANTHROPIC_MODEL || DEFAULT_MODEL;
+}
+
+/** Prix en $ par million de tokens (entrée, sortie). Tarifs Anthropic au 2026-11-03. */
+const PRICES: Record<string, { input: number; output: number }> = {
+  'claude-sonnet-5-5': { input: 2, output: 10 },
+  'claude-haiku-5-5': { input: 0.1, output: 0.5 },
+};
+/** Modèle inconnu : estimation volontairement haute, pour que le plafond mensuel reste prudent. */
+const FALLBACK_PRICE = { input: 5, output: 25 };
+
+/** Coût estimé en CENTIMES d'euro, d'après le modèle réellement utilisé. */
+export function estimateCostCents(usage: AiUsage, model: string = aiModel()): number {
+  const price = PRICES[model] ?? FALLBACK_PRICE;
+  const usd = (usage.input_tokens * price.input + usage.output_tokens * price.output) / 1_000_000;
+  return Math.ceil(usd * 100); // $ → € ≈ 1:1, arrondi au centime supérieur
+}
+
+/**
+ * Réflexion (thinking) coupée : produire un devis en JSON n'en a pas besoin, et les tokens de
+ * réflexion sont facturés comme de la sortie et comptent dans max_tokens (risque de JSON tronqué).
+ * La syntaxe dépend du modèle ; pour un modèle inconnu on n'envoie rien (comportement par défaut).
+ */
+function noThinking(model: string): Record<string, unknown> {
+  if (model === 'claude-sonnet-5-5') return { thinking: { type: 'between_tools' } }; // sans outil = pas de réflexion
+  if (model === 'claude-haiku-5-5') return { thinking: { type: 'disabled' } }; // accepté à l'effort par défaut (medium)
+  return {};
 }
 
 export type AiFailureKind =
@@ -61,7 +86,7 @@ export async function callClaude(params: {
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY manquante');
   }
-  const model = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
+  const model = aiModel();
 
   const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
@@ -73,6 +98,7 @@ export async function callClaude(params: {
     body: JSON.stringify({
       model,
       max_tokens: params.maxTokens ?? 2000,
+      ...noThinking(model),
       system: params.system,
       messages: [{ role: 'user', content: params.user }],
     }),
